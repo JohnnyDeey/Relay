@@ -375,19 +375,20 @@
     position: absolute;
     bottom: 0; left: 0; right: 0;
     z-index: 4;
-    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
-    padding: 48px 20px 20px;
+    /* gradient only renders when visible — no shadow bleeding through when hidden */
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 70%, transparent 100%);
+    padding: 36px 20px 20px;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    transition: opacity 0.35s ease, transform 0.35s ease;
-    /* start visible */
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
   }
 
   #playerControls.hidden {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
     pointer-events: none;
+    visibility: hidden; /* removes it from paint entirely — no shadow */
   }
 
   .ctrl-top {
@@ -480,11 +481,11 @@
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%);
-    transition: opacity 0.35s ease;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, transparent 100%);
+    transition: opacity 0.35s ease, visibility 0.35s;
   }
 
-  #playerHeader.hidden { opacity: 0; pointer-events: none; }
+  #playerHeader.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
 
   .icon-btn {
     background: none; border: none; color: inherit;
@@ -545,33 +546,22 @@
   <!-- Loading / error messages -->
   <div id="playerState"></div>
 
-  <!-- Top gradient bar with back button -->
+  <!-- Top gradient bar with back button + channel name -->
   <div id="playerHeader">
-    <button class="ctrl-btn" id="closePlayer" aria-label="Close player" style="width:44px;height:44px;border-radius:50%;">
+    <button class="ctrl-btn" id="closePlayer" aria-label="Close player" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <line x1="19" y1="12" x2="5" y2="12"/>
         <polyline points="12 19 5 12 12 5"/>
       </svg>
     </button>
+    <div style="flex:1;overflow:hidden;padding-left:10px;">
+      <div class="ctrl-name mono" id="pname" style="font-size:15px;">—</div>
+      <div class="ctrl-country" id="pcountry" style="font-size:12px;color:#8E9CAE;margin-top:2px;"></div>
+    </div>
   </div>
 
   <!-- Custom control bar at bottom -->
   <div id="playerControls">
-    <div class="ctrl-top">
-      <div class="ctrl-info">
-        <div class="ctrl-name mono" id="pname">—</div>
-        <div class="ctrl-country" id="pcountry"></div>
-      </div>
-
-      <!-- Fullscreen toggle -->
-      <button class="ctrl-btn" id="fsBtn" aria-label="Toggle fullscreen">
-        <svg id="fsIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-        </svg>
-      </button>
-    </div>
-
     <div class="ctrl-bottom">
       <!-- Play / Pause centered -->
       <button class="ctrl-btn" id="playPauseBtn" aria-label="Play or pause">
@@ -599,6 +589,14 @@
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
           <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </button>
+
+      <!-- Fullscreen toggle -->
+      <button class="ctrl-btn" id="fsBtn" aria-label="Toggle fullscreen">
+        <svg id="fsIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
         </svg>
       </button>
     </div>
@@ -781,8 +779,10 @@ function showCountriesView(shouldPushState = true) {
   if (shouldPushState) navigateTo("countries");
   currentView = "countries";
   closePlayerOverlayOnly();
+  searchInput.value = '';
+  searchInput.placeholder = 'Find a country or region…';
   searchWrap.style.display = "flex";
-  renderCountries(searchInput.value);
+  renderCountries('');
 }
 
 function renderCountries(filter) {
@@ -835,16 +835,12 @@ function openCountry(country, shouldPushState = true) {
   currentView = "grid";
   closePlayerOverlayOnly();
 
-  const channels = byCountry[country] || [];
-  const tiles = channels.map((ch, idx) => `
-    <div class="tile" data-idx="${idx}" tabindex="0" role="button" aria-label="Tune into ${escapeHtml(ch.name)}">
-      <div class="logo-wrap">
-        ${ch.logo
-          ? `<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`
-          : `<span class="initials">${initials(ch.name)}</span>`}
-      </div>
-      <div class="tile-name">${escapeHtml(ch.name)}</div>
-    </div>`).join('');
+  // Switch search bar to channel-search mode
+  searchInput.value = '';
+  searchInput.placeholder = 'Search channels in ' + country + '…';
+  searchWrap.style.display = 'flex';
+
+  const allChannels = byCountry[country] || [];
 
   mainEl.innerHTML = `
     <button class="back-row" id="backToCountries" tabindex="0" aria-label="Back to countries">
@@ -855,17 +851,61 @@ function openCountry(country, shouldPushState = true) {
       </div>
       <div>
         <div class="country-title">${escapeHtml(country)}</div>
-        <div class="country-sub mono">${channels.length} broadcast signals online</div>
+        <div class="country-sub mono" id="gridSub">${allChannels.length} broadcast signals online</div>
       </div>
     </button>
-    <div class="grid">${tiles || '<div class="empty">No transmission elements registered.</div>'}</div>`;
+    <div class="grid" id="channelGrid"></div>`;
 
   const goBack = () => window.history.back();
   const backBtn = document.getElementById('backToCountries');
   backBtn.addEventListener('click', goBack);
   backBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBack(); } });
 
-  mainEl.querySelectorAll('.tile').forEach(el => {
+  renderGrid('');
+}
+
+function renderGrid(filter) {
+  const country = currentCountry;
+  const allChannels = byCountry[country] || [];
+  const filterLc = filter.trim().toLowerCase();
+  const channels = filterLc
+    ? allChannels.filter(ch => ch.name.toLowerCase().includes(filterLc))
+    : allChannels;
+
+  const grid = document.getElementById('channelGrid');
+  const sub  = document.getElementById('gridSub');
+  if (!grid) return;
+
+  if (sub) {
+    sub.textContent = filterLc
+      ? (channels.length ? channels.length + ' match' + (channels.length !== 1 ? 'es' : '') : 'No match')
+      : allChannels.length + ' broadcast signals online';
+  }
+
+  if (channels.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      No channels match "<strong>${escapeHtml(filter)}</strong>" — try a different name.
+    </div>`;
+    return;
+  }
+
+  // Build tiles using original index so playChannel idx stays correct
+  const tiles = channels.map((ch) => {
+    const idx = allChannels.indexOf(ch);
+    return `
+      <div class="tile" data-idx="${idx}" tabindex="0" role="button" aria-label="Tune into ${escapeHtml(ch.name)}">
+        <div class="logo-wrap">
+          ${ch.logo
+            ? `<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`
+            : `<span class="initials">${initials(ch.name)}</span>`}
+        </div>
+        <div class="tile-name">${escapeHtml(ch.name)}</div>
+      </div>`;
+  }).join('');
+
+  grid.innerHTML = tiles;
+
+  grid.querySelectorAll('.tile').forEach(el => {
     const idx = parseInt(el.getAttribute('data-idx'), 10);
     const play = () => playChannel(country, idx);
     el.addEventListener('click', play);
@@ -1170,6 +1210,7 @@ document.getElementById('closePlayer').addEventListener('click', (e) => {
 /* ---- Search ---- */
 searchInput.addEventListener('input', (e) => {
   if (currentView === "countries") renderCountries(e.target.value);
+  else if (currentView === "grid") renderGrid(e.target.value);
 });
 
 /* ---- Boot ---- */
