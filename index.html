@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 
-<!-- PWA Specs -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#FFFFFF" id="themeMeta">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,7 +21,6 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <style>
-  /* ---------- 4. CSS Theme System (Defaulting to crisp B&W) ---------- */
   :root {
     --bg: #FFFFFF;
     --surface: #F9FBFD;
@@ -52,7 +50,7 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -66,9 +64,8 @@
   .mono { font-family: 'IBM Plex Mono', monospace; }
   button { font-family: inherit; }
 
-  /* ---------- 3. Modern Responsive App Shell ---------- */
   #app {
-    max-width: 1200px; /* Expands nicely on Desktop & TV displays */
+    max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
     display: flex;
@@ -95,41 +92,19 @@
     flex-wrap: wrap;
   }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .brand { display: flex; align-items: center; gap: 10px; }
 
   .brand .mark {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 12px; height: 12px; border-radius: 50%;
     background: var(--signal);
     box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.2);
     flex-shrink: 0;
   }
 
-  .brand h1 {
-    font-size: 24px;
-    letter-spacing: .12em;
-    margin: 0;
-    font-weight: 700;
-  }
+  .brand h1 { font-size: 24px; letter-spacing: .12em; margin: 0; font-weight: 700; }
+  .brand .freq { color: var(--muted); font-size: 13px; letter-spacing: .05em; font-weight: 500; }
 
-  .brand .freq {
-    color: var(--muted);
-    font-size: 13px;
-    letter-spacing: .05em;
-    font-weight: 500;
-  }
-
-  /* Utility Header Buttons */
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
 
   .theme-toggle-btn {
     background: var(--surface);
@@ -146,9 +121,7 @@
     transition: transform 0.1s;
   }
 
-  .theme-toggle-btn:active {
-    transform: scale(0.97);
-  }
+  .theme-toggle-btn:active { transform: scale(0.97); }
 
   .theme-toggle-btn:focus-visible,
   .country-row:focus-visible,
@@ -191,13 +164,8 @@
   }
 
   .search input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-size: 16px;
-    width: 100%;
-    font-family: inherit;
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: 16px; width: 100%; font-family: inherit;
   }
 
   .search input::placeholder { color: var(--muted); }
@@ -222,7 +190,6 @@
 
   main { flex: 1; padding: 24px 0 48px; }
 
-  /* ---------- Status Logs & Spinners ---------- */
   .status {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 16px; padding: 80px 20px; color: var(--muted); text-align: center; font-size: 15px;
@@ -236,7 +203,6 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ---------- Pins ---------- */
   .section-label {
     font-size: 12px; letter-spacing: .12em; color: var(--muted);
     margin: 8px 2px 12px; font-weight: 700; text-transform: uppercase;
@@ -267,24 +233,14 @@
   .pin:active { transform: scale(.97); }
   .pin .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tuned); }
 
-  /* ---------- Responsive Country & Channel Displays ---------- */
   .country-list {
     display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  @media (min-width: 640px) {
-    .country-list {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 960px) {
-    .country-list {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
+  @media (min-width: 640px) { .country-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .country-list { grid-template-columns: repeat(3, 1fr); } }
 
   .country-row {
     display: flex; align-items: center; justify-content: space-between;
@@ -303,15 +259,14 @@
 
   .country-name { font-size: 16px; font-weight: 600; }
   .country-meta { display: flex; align-items: center; gap: 14px; }
-  
+
   .bars { display: flex; gap: 3px; align-items: flex-end; height: 16px; }
   .bars span { width: 4px; background: var(--surface-2); border-radius: 1px; }
   .bars span.on { background: var(--tuned); }
-  
+
   .count { font-size: 12px; color: var(--muted); min-width: 60px; text-align: right; font-weight: 500; }
   .empty { color: var(--muted); text-align: center; padding: 60px 20px; font-size: 15px; }
 
-  /* ---------- Channel grid ---------- */
   .back-row {
     display: flex; align-items: center; gap: 12px; margin-bottom: 24px; cursor: pointer;
     background: none; border: none; padding: 0; color: inherit; width: fit-content;
@@ -326,12 +281,7 @@
     gap: 16px;
   }
 
-  @media (min-width: 768px) {
-    .grid {
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 20px;
-    }
-  }
+  @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; } }
 
   .tile {
     background: var(--surface);
@@ -345,10 +295,7 @@
     transition: background-color 0.15s, transform 0.1s;
   }
 
-  .tile:hover, .tile:focus {
-    background: var(--surface-2);
-    transform: translateY(-2px);
-  }
+  .tile:hover, .tile:focus { background: var(--surface-2); transform: translateY(-2px); }
 
   .logo-wrap {
     width: 72px; height: 72px; border-radius: 50%;
@@ -360,10 +307,7 @@
   }
 
   .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
-  .logo-wrap .initials {
-    font-size: 20px; font-weight: 700; color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
-  }
+  .logo-wrap .initials { font-size: 20px; font-weight: 700; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 
   .tile-name {
     font-size: 13px; line-height: 1.4; font-weight: 600;
@@ -372,48 +316,175 @@
     word-break: break-word;
   }
 
-  /* ---------- High Contrast Media Player overlay ---------- */
+  /* =====================================================
+     PLAYER OVERLAY — fully custom controls, no native UI
+     ===================================================== */
   #player-overlay {
-    position: fixed; inset: 0; background: #000000;
+    position: fixed; inset: 0;
+    background: #000000;
     display: none; flex-direction: column;
     z-index: 50;
   }
 
   #player-overlay.active { display: flex; }
 
-  .player-top {
-    display: flex; align-items: center; gap: 16px;
-    padding: 16px;
-    background: #111111;
-    border-bottom: 2px solid #333333;
-    color: #FFFFFF;
-    flex-shrink: 0;
+  /* The video fills everything — NO native controls */
+  #video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    object-fit: contain;
+    /* controls attribute removed — we manage UI ourselves */
   }
 
-  .player-top .pname { font-size: 16px; font-weight: 600; flex: 1;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  
-  .player-top .pcountry { font-size: 12px; color: #8E9CAE; display: block; margin-top: 2px; }
-  
-  video { width: 100%; flex: 1; background: #000; object-fit: contain; }
-
-  .player-state {
-    position: absolute; inset: 0; top: 60px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 16px; color: #CCCCCC; font-size: 14px; text-align: center; padding: 0 30px;
+  /* ---- Loading / error state centered over video ---- */
+  #playerState {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(0,0,0,0.82);
+    color: #ccc;
+    font-size: 14px;
+    text-align: center;
+    padding: 0 30px;
+    z-index: 3;
     pointer-events: none;
-    background: rgba(0,0,0,0.85);
   }
 
-  .player-state.show { pointer-events: auto; }
-
-  .player-state button {
+  #playerState.show {
+    display: flex;
     pointer-events: auto;
-    background: #FFFFFF; border: 2px solid #FFFFFF; color: #000000;
-    padding: 12px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer;
   }
 
-  .player-state button:active { transform: scale(0.97); }
+  #playerState button {
+    pointer-events: auto;
+    background: #fff; border: 2px solid #fff; color: #000;
+    padding: 12px 24px; border-radius: 6px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* ---- Custom control bar — slides in/out ---- */
+  #playerControls {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 4;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
+    padding: 48px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    /* start visible */
+  }
+
+  #playerControls.hidden {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+
+  .ctrl-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .ctrl-info { flex: 1; overflow: hidden; }
+  .ctrl-name { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ctrl-country { font-size: 12px; color: #8E9CAE; margin-top: 2px; }
+
+  .ctrl-btn {
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.25);
+    color: #fff;
+    border-radius: 8px;
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ctrl-btn:hover, .ctrl-btn:focus { background: rgba(255,255,255,0.25); outline: none; }
+  .ctrl-btn:focus-visible { outline: 3px solid #38BDF8; outline-offset: 2px; }
+  .ctrl-btn:active { transform: scale(0.92); }
+
+  /* Big center play/pause button */
+  #playPauseBtn {
+    width: 68px; height: 68px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.4);
+  }
+
+  /* Progress bar row */
+  .ctrl-bottom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .time-label { font-size: 12px; color: #ccc; font-family: 'IBM Plex Mono', monospace; min-width: 40px; }
+
+  /* Seek bar — live streams get a pulsing dot instead */
+  .progress-wrap {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  #progressBar {
+    height: 100%;
+    width: 0%;
+    background: #FF5A1F;
+    border-radius: 2px;
+    transition: width 0.5s linear;
+  }
+
+  /* LIVE badge shown for live/non-seekable streams */
+  #liveBadge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .08em;
+  }
+
+  #liveBadge .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #FF5A1F;
+    animation: livepulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes livepulse { 0%,100% { opacity:1; } 50% { opacity: 0.3; } }
+
+  /* Header bar at top — same back button */
+  #playerHeader {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%);
+    transition: opacity 0.35s ease;
+  }
+
+  #playerHeader.hidden { opacity: 0; pointer-events: none; }
 
   .icon-btn {
     background: none; border: none; color: inherit;
@@ -421,8 +492,7 @@
     cursor: pointer; padding: 8px; border-radius: var(--radius);
   }
 
-  .icon-btn:hover { background: var(--surface-2); }
-  .player-top .icon-btn:hover { background: #222222; }
+  .icon-btn:hover { background: rgba(255,255,255,0.12); }
 </style>
 </head>
 <body>
@@ -435,12 +505,9 @@
         <h1>RELAY</h1>
         <span class="freq mono" id="freqLabel">TUNING…</span>
       </div>
-      
       <div class="header-actions">
-        <!-- 4. Theme Toggle Button -->
         <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle dark and light themes">
-          <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform: rotate(0deg); transition: transform 0.5s ease;">
-            <!-- Simple moon path inside SVG, dynamic switch on load -->
+          <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
           <span id="themeText">DARK MODE</span>
@@ -449,12 +516,12 @@
     </div>
 
     <div class="dial"><div class="sweep" id="sweep"></div></div>
-    
+
     <button id="installBtn" class="install-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Install RELAY PWA
     </button>
-    
+
     <div class="search" id="searchWrap" style="display:none;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="searchInput" type="text" placeholder="Find a country or region…" autocomplete="off">
@@ -469,45 +536,99 @@
   </main>
 </div>
 
+<!-- ===================== PLAYER OVERLAY ===================== -->
 <div id="player-overlay">
-  <div class="player-top">
-    <button class="icon-btn" id="closePlayer" aria-label="Close Player" tabindex="0">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+
+  <!-- Raw video — no controls attribute! -->
+  <video id="video" playsinline></video>
+
+  <!-- Loading / error messages -->
+  <div id="playerState"></div>
+
+  <!-- Top gradient bar with back button -->
+  <div id="playerHeader">
+    <button class="ctrl-btn" id="closePlayer" aria-label="Close player" style="width:44px;height:44px;border-radius:50%;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
     </button>
-    <div style="flex:1; overflow:hidden;">
-      <span class="pname mono" id="pname">—</span>
-      <span class="pcountry" id="pcountry"></span>
+  </div>
+
+  <!-- Custom control bar at bottom -->
+  <div id="playerControls">
+    <div class="ctrl-top">
+      <div class="ctrl-info">
+        <div class="ctrl-name mono" id="pname">—</div>
+        <div class="ctrl-country" id="pcountry"></div>
+      </div>
+
+      <!-- Fullscreen toggle -->
+      <button class="ctrl-btn" id="fsBtn" aria-label="Toggle fullscreen">
+        <svg id="fsIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="ctrl-bottom">
+      <!-- Play / Pause centered -->
+      <button class="ctrl-btn" id="playPauseBtn" aria-label="Play or pause">
+        <svg id="ppIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <!-- pause icon by default while playing -->
+          <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+        </svg>
+      </button>
+
+      <!-- Live badge / progress bar -->
+      <div id="liveBadge">
+        <span class="live-dot"></span>
+        LIVE
+      </div>
+
+      <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div id="progressBar"></div>
+      </div>
+
+      <span class="time-label" id="timeLabel"></span>
+
+      <!-- Volume mute toggle -->
+      <button class="ctrl-btn" id="muteBtn" aria-label="Toggle mute">
+        <svg id="muteIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </button>
     </div>
   </div>
-  <div style="position:relative; flex:1; display:flex; background:#000;">
-    <video id="video" playsinline controls></video>
-    <div class="player-state" id="playerState"></div>
-  </div>
-</div>
+
+</div><!-- /player-overlay -->
 
 <script>
 const M3U_URL = "https://iptv-org.github.io/iptv/index.country.m3u";
 const PINS = ["Nigeria", "Spain", "United Kingdom", "Japan"];
 
-let byCountry = {};        // country -> [channels]
-let countryNames = [];     // sorted list
-let currentView = "loading";      // loading | countries | grid | error
+let byCountry = {};
+let countryNames = [];
+let currentView = "loading";
 let currentCountry = null;
 let currentChannelIdx = null;
 
-const main = document.getElementById('main');
-const freqLabel = document.getElementById('freqLabel');
-const searchWrap = document.getElementById('searchWrap');
-const searchInput = document.getElementById('searchInput');
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon = document.getElementById('themeIcon');
-const themeText = document.getElementById('themeText');
-const themeMeta = document.getElementById('themeMeta');
+const mainEl       = document.getElementById('main');
+const freqLabel    = document.getElementById('freqLabel');
+const searchWrap   = document.getElementById('searchWrap');
+const searchInput  = document.getElementById('searchInput');
+const themeToggle  = document.getElementById('themeToggle');
+const themeIcon    = document.getElementById('themeIcon');
+const themeText    = document.getElementById('themeText');
+const themeMeta    = document.getElementById('themeMeta');
 
-/* ---------------- 4. Elegant Black & White Theme System ---------------- */
+/* ---- Theme ---- */
 function initTheme() {
-  const storedTheme = localStorage.getItem('relay_theme');
-  if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  const stored = localStorage.getItem('relay_theme');
+  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     enableDarkMode();
   } else {
     enableLightMode();
@@ -518,7 +639,11 @@ function enableDarkMode() {
   document.body.classList.add('dark-theme');
   themeText.textContent = "LIGHT MODE";
   themeMeta.setAttribute('content', '#000000');
-  themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+  themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
   localStorage.setItem('relay_theme', 'dark');
 }
 
@@ -531,41 +656,37 @@ function enableLightMode() {
 }
 
 themeToggle.addEventListener('click', () => {
-  if (document.body.classList.contains('dark-theme')) {
-    enableLightMode();
-  } else {
-    enableDarkMode();
-  }
+  document.body.classList.contains('dark-theme') ? enableLightMode() : enableDarkMode();
 });
 
-/* ---------------- Helpers ---------------- */
-function escapeHtml(s){
+/* ---- Helpers ---- */
+function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function initials(name){
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if(words.length === 0) return "?";
-  if(words.length === 1) return words[0].slice(0,2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
+function initials(name) {
+  const w = name.trim().split(/\s+/).filter(Boolean);
+  if (!w.length) return "?";
+  if (w.length === 1) return w[0].slice(0,2).toUpperCase();
+  return (w[0][0] + w[1][0]).toUpperCase();
 }
 
-function parseM3U(text){
+function parseM3U(text) {
   const lines = text.split('\n');
   const channels = [];
   let pending = null;
-  for(let raw of lines){
+  for (let raw of lines) {
     const line = raw.trim();
-    if(line.startsWith('#EXTINF')){
-      const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+    if (line.startsWith('#EXTINF')) {
+      const logoMatch  = line.match(/tvg-logo="([^"]*)"/);
       const groupMatch = line.match(/group-title="([^"]*)"/);
-      const nameMatch = line.match(/,(.*)$/);
+      const nameMatch  = line.match(/,(.*)$/);
       pending = {
         logo: logoMatch ? logoMatch[1] : '',
         country: groupMatch ? groupMatch[1] : 'Unsorted',
         name: nameMatch ? nameMatch[1].trim() : 'Unnamed channel'
       };
-    } else if(line && !line.startsWith('#') && pending){
+    } else if (line && !line.startsWith('#') && pending) {
       pending.url = line;
       channels.push(pending);
       pending = null;
@@ -574,15 +695,12 @@ function parseM3U(text){
   return channels;
 }
 
-/* ---------------- 2. TV Navigation State Machine (Routing System) ---------------- */
-// Push custom app states into the HTML5 history sandbox so "Back" moves backward internally instead of leaving PWA
+/* ---- Routing ---- */
 function navigateTo(viewName, params = {}) {
   currentView = viewName;
-  const stateObj = { view: viewName, ...params };
-  window.history.pushState(stateObj, "");
+  window.history.pushState({ view: viewName, ...params }, "");
 }
 
-// Global popstate handles back-tracking perfectly
 window.addEventListener('popstate', (event) => {
   const state = event.state;
   if (!state || state.view === "countries") {
@@ -594,46 +712,48 @@ window.addEventListener('popstate', (event) => {
   }
 });
 
-// Hardware remote control back buttons keypress monitoring (ESC, remote BACK)
 window.addEventListener('keydown', (e) => {
-  const backKeys = [4, 8, 27]; // Android/TV back code, Backspace, Escape
+  const backKeys = [4, 8, 27];
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
     if (document.getElementById('player-overlay').classList.contains('active')) {
       e.preventDefault();
-      closePlayer(); // closes stream, auto triggers state pops
+      closePlayer();
     } else if (currentView === "grid") {
       e.preventDefault();
-      window.history.back(); // safely navigate back to main index
+      window.history.back();
     }
+  }
+  // D-pad OK/Enter on TV remotes triggers the focused element
+  if (e.keyCode === 13 || e.key === 'Enter') {
+    const focused = document.activeElement;
+    if (focused && focused !== document.body) focused.click();
   }
 });
 
-
-/* ---------------- App Initialization & API Fetching ---------------- */
-async function loadPlaylist(){
-  try{
-    const res = await fetch(M3U_URL, {cache:"no-store"});
-    if(!res.ok) throw new Error("HTTP " + res.status);
+/* ---- Load playlist ---- */
+async function loadPlaylist() {
+  try {
+    const res = await fetch(M3U_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
     const channels = parseM3U(text);
-    if(channels.length === 0) throw new Error("Empty playlist");
+    if (channels.length === 0) throw new Error("Empty playlist");
 
     byCountry = {};
-    for(const ch of channels){
+    for (const ch of channels) {
       const key = ch.country || "Unsorted";
-      if(!byCountry[key]) byCountry[key] = [];
+      if (!byCountry[key]) byCountry[key] = [];
       byCountry[key].push(ch);
     }
-    countryNames = Object.keys(byCountry).sort((a,b)=>a.localeCompare(b));
+    countryNames = Object.keys(byCountry).sort((a, b) => a.localeCompare(b));
     freqLabel.textContent = countryNames.length + " COUNTRIES · " + channels.length + " SIGNALS";
-    
-    // Set up initial replace state for history tracking
+
     window.history.replaceState({ view: "countries" }, "");
     showCountriesView(false);
-  } catch(err) {
+  } catch (err) {
     currentView = "error";
     freqLabel.textContent = "NO SIGNAL";
-    main.innerHTML = `
+    mainEl.innerHTML = `
       <div class="status">
         <div style="color:var(--danger); font-size:32px; font-weight:bold;">⚠</div>
         <div style="font-size: 16px;">Couldn't tune to the broadcast index.<br>Verify network configuration and source feed.</div>
@@ -642,43 +762,38 @@ async function loadPlaylist(){
   }
 }
 
-function maxCount(){
+function maxCount() {
   return Math.max(...countryNames.map(c => byCountry[c].length), 1);
 }
 
-function barsHtml(count, max){
+function barsHtml(count, max) {
   const levels = 5;
   const filled = Math.max(1, Math.round((count / max) * levels));
   let html = '<div class="bars">';
-  for(let i=0; i<levels; i++){
-    const h = 4 + i*2.5;
-    html += `<span class="${i<filled?'on':''}" style="height:${h}px;"></span>`;
+  for (let i = 0; i < levels; i++) {
+    const h = 4 + i * 2.5;
+    html += `<span class="${i < filled ? 'on' : ''}" style="height:${h}px;"></span>`;
   }
-  html += '</div>';
-  return html;
+  return html + '</div>';
 }
 
 function showCountriesView(shouldPushState = true) {
-  if (shouldPushState) {
-    navigateTo("countries");
-  }
+  if (shouldPushState) navigateTo("countries");
   currentView = "countries";
   closePlayerOverlayOnly();
   searchWrap.style.display = "flex";
   renderCountries(searchInput.value);
 }
 
-function renderCountries(filter){
+function renderCountries(filter) {
   const max = maxCount();
-  const filterLc = (filter||"").trim().toLowerCase();
-  const list = filterLc
-    ? countryNames.filter(c => c.toLowerCase().includes(filterLc))
-    : countryNames;
+  const filterLc = (filter || "").trim().toLowerCase();
+  const list = filterLc ? countryNames.filter(c => c.toLowerCase().includes(filterLc)) : countryNames;
 
   let pinsHtml = "";
-  if(!filterLc){
+  if (!filterLc) {
     const validPins = PINS.filter(p => byCountry[p]);
-    if(validPins.length){
+    if (validPins.length) {
       pinsHtml = `
         <div class="section-label">QUICK TUNE</div>
         <div class="pins">
@@ -699,199 +814,371 @@ function renderCountries(filter){
       </div>`;
   }).join('');
 
-  main.innerHTML = `
+  mainEl.innerHTML = `
     ${pinsHtml}
     <div class="section-label">${filterLc ? 'MATCHES' : 'ALL COUNTRIES'}</div>
     <div class="country-list">
       ${rows || '<div class="empty">No transmission matches.</div>'}
-    </div>
-  `;
+    </div>`;
 
-  // Dynamic Event Wiring + Keyboard activation helper
-  const addTriggerEvents = (element) => {
-    const action = () => openCountry(element.getAttribute('data-country'));
-    element.addEventListener('click', action);
-    element.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        action();
-      }
-    });
+  const addTrigger = (el) => {
+    const action = () => openCountry(el.getAttribute('data-country'));
+    el.addEventListener('click', action);
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); action(); } });
   };
-
-  main.querySelectorAll('.country-row, .pin').forEach(addTriggerEvents);
+  mainEl.querySelectorAll('.country-row, .pin').forEach(addTrigger);
 }
 
-function openCountry(country, shouldPushState = true){
-  if (shouldPushState) {
-    navigateTo("grid", { country: country });
-  }
+function openCountry(country, shouldPushState = true) {
+  if (shouldPushState) navigateTo("grid", { country });
   currentCountry = country;
   currentView = "grid";
   closePlayerOverlayOnly();
-  
+
   const channels = byCountry[country] || [];
+  const tiles = channels.map((ch, idx) => `
+    <div class="tile" data-idx="${idx}" tabindex="0" role="button" aria-label="Tune into ${escapeHtml(ch.name)}">
+      <div class="logo-wrap">
+        ${ch.logo
+          ? `<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`
+          : `<span class="initials">${initials(ch.name)}</span>`}
+      </div>
+      <div class="tile-name">${escapeHtml(ch.name)}</div>
+    </div>`).join('');
 
-  const tiles = channels.map((ch, idx) => {
-    return `
-      <div class="tile" data-idx="${idx}" tabindex="0" role="button" aria-label="Tune into ${escapeHtml(ch.name)}">
-        <div class="logo-wrap">
-          ${ch.logo
-            ? `<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`
-            : `<span class="initials">${initials(ch.name)}</span>`}
-        </div>
-        <div class="tile-name">${escapeHtml(ch.name)}</div>
-      </div>`;
-  }).join('');
-
-  main.innerHTML = `
+  mainEl.innerHTML = `
     <button class="back-row" id="backToCountries" tabindex="0" aria-label="Back to countries">
-      <div class="icon-btn" style="border: 2px solid var(--line); display: inline-flex;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div>
+      <div class="icon-btn" style="border: 2px solid var(--line); display: inline-flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </div>
       <div>
         <div class="country-title">${escapeHtml(country)}</div>
         <div class="country-sub mono">${channels.length} broadcast signals online</div>
       </div>
     </button>
-    <div class="grid">${tiles || '<div class="empty">No transmission elements registered.</div>'}</div>
-  `;
+    <div class="grid">${tiles || '<div class="empty">No transmission elements registered.</div>'}</div>`;
 
-  // Back trigger action
-  const goBackAction = () => window.history.back();
+  const goBack = () => window.history.back();
   const backBtn = document.getElementById('backToCountries');
-  backBtn.addEventListener('click', goBackAction);
-  backBtn.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBackAction(); }
-  });
+  backBtn.addEventListener('click', goBack);
+  backBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBack(); } });
 
-  main.querySelectorAll('.tile').forEach(el => {
+  mainEl.querySelectorAll('.tile').forEach(el => {
     const idx = parseInt(el.getAttribute('data-idx'), 10);
-    const playAction = () => playChannel(country, idx);
-    el.addEventListener('click', playAction);
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        playAction();
-      }
-    });
+    const play = () => playChannel(country, idx);
+    el.addEventListener('click', play);
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
   });
 }
 
-/* ---------------- Player Control System ---------------- */
-const overlay = document.getElementById('player-overlay');
-const video = document.getElementById('video');
-const pname = document.getElementById('pname');
-const pcountry = document.getElementById('pcountry');
-const playerState = document.getElementById('playerState');
+/* =====================================================
+   PLAYER — Custom controls, no native browser UI
+   ===================================================== */
+const overlay       = document.getElementById('player-overlay');
+const video         = document.getElementById('video');
+const playerState   = document.getElementById('playerState');
+const playerHeader  = document.getElementById('playerHeader');
+const playerCtrls   = document.getElementById('playerControls');
+const pname         = document.getElementById('pname');
+const pcountry      = document.getElementById('pcountry');
+const playPauseBtn  = document.getElementById('playPauseBtn');
+const ppIcon        = document.getElementById('ppIcon');
+const muteBtn       = document.getElementById('muteBtn');
+const muteIcon      = document.getElementById('muteIcon');
+const fsBtn         = document.getElementById('fsBtn');
+const fsIcon        = document.getElementById('fsIcon');
+const liveBadge     = document.getElementById('liveBadge');
+const progressWrap  = document.getElementById('progressWrap');
+const progressBar   = document.getElementById('progressBar');
+const timeLabel     = document.getElementById('timeLabel');
+
 let hls = null;
 let watchdog = null;
+let hideControlsTimer = null;
+let controlsVisible = true;
 
-function setPlayerState(html, show){
-  playerState.innerHTML = html;
-  playerState.classList.toggle('show', !!show);
+/* -- Control bar visibility -- */
+function showControls() {
+  playerHeader.classList.remove('hidden');
+  playerCtrls.classList.remove('hidden');
+  controlsVisible = true;
+  scheduleHideControls();
 }
 
-function playChannel(country, idx, shouldPushState = true){
-  const ch = byCountry[country][idx];
-  if(!ch) return;
-
-  if (shouldPushState) {
-    navigateTo("player", { country: country, channelIdx: idx });
+function scheduleHideControls() {
+  clearTimeout(hideControlsTimer);
+  if (!video.paused) {
+    hideControlsTimer = setTimeout(hideControls, 3500);
   }
+}
 
-  currentCountry = country;
+function hideControls() {
+  playerHeader.classList.add('hidden');
+  playerCtrls.classList.add('hidden');
+  controlsVisible = false;
+}
+
+function toggleControls() {
+  controlsVisible ? hideControls() : showControls();
+}
+
+// Tap/click anywhere on video toggles controls
+video.addEventListener('click', toggleControls);
+video.addEventListener('touchend', (e) => { e.preventDefault(); toggleControls(); });
+
+// Mouse move on desktop/TV browsers shows controls
+overlay.addEventListener('mousemove', showControls);
+
+/* -- Play / Pause -- */
+function updatePlayIcon() {
+  if (video.paused) {
+    ppIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+    clearTimeout(hideControlsTimer); // keep controls visible while paused
+  } else {
+    ppIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+    scheduleHideControls();
+  }
+}
+
+playPauseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (video.paused) { video.play().catch(() => {}); } else { video.pause(); }
+  showControls();
+});
+
+video.addEventListener('play',  updatePlayIcon);
+video.addEventListener('pause', updatePlayIcon);
+
+/* -- Mute -- */
+const UNMUTED_SVG = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
+const MUTED_SVG = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+  <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`;
+
+muteBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  video.muted = !video.muted;
+  muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG;
+  showControls();
+});
+
+/* -- Progress / time -- */
+function isLiveStream() {
+  return !isFinite(video.duration) || video.duration === 0;
+}
+
+function updateProgress() {
+  if (isLiveStream()) {
+    liveBadge.style.display = 'flex';
+    progressWrap.style.display = 'none';
+    timeLabel.textContent = '';
+  } else {
+    liveBadge.style.display = 'none';
+    progressWrap.style.display = 'block';
+    const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+    progressBar.style.width = pct + '%';
+    timeLabel.textContent = fmt(video.currentTime);
+  }
+}
+
+function fmt(s) {
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+video.addEventListener('timeupdate', updateProgress);
+video.addEventListener('durationchange', updateProgress);
+
+progressWrap.addEventListener('click', (e) => {
+  if (isLiveStream()) return;
+  e.stopPropagation();
+  const rect = progressWrap.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  video.currentTime = ratio * video.duration;
+  showControls();
+});
+
+/* -- Fullscreen -- */
+function toggleFullscreen() {
+  const el = document.getElementById('player-overlay');
+  try {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
+    }
+  } catch(e) {}
+}
+
+fsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleFullscreen();
+  showControls();
+});
+
+document.addEventListener('fullscreenchange', updateFsIcon);
+document.addEventListener('webkitfullscreenchange', updateFsIcon);
+
+function updateFsIcon() {
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  fsIcon.innerHTML = isFs
+    ? `<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
+       <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>`
+    : `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+       <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`;
+}
+
+/* -- D-pad keyboard controls for TV remotes -- */
+document.addEventListener('keydown', (e) => {
+  if (!overlay.classList.contains('active')) return;
+
+  // Show controls on any key press during playback
+  showControls();
+
+  switch (e.keyCode) {
+    case 179: // MediaPlayPause
+    case 32:  // Space (some TV remotes)
+      e.preventDefault();
+      video.paused ? video.play().catch(()=>{}) : video.pause();
+      break;
+    case 415: // MediaPlay
+      e.preventDefault();
+      video.play().catch(() => {});
+      break;
+    case 19:  // MediaPause
+      e.preventDefault();
+      video.pause();
+      break;
+    case 412: // MediaRewind
+    case 37:  // Left arrow — rewind 10s
+      if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime - 10); }
+      break;
+    case 417: // MediaFastForward
+    case 39:  // Right arrow — forward 10s
+      if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime + 10); }
+      break;
+    case 173: // MediaMute
+    case 77:  // M key
+      video.muted = !video.muted;
+      muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG;
+      break;
+    case 27:  // Escape — handled above globally
+      break;
+  }
+});
+
+/* -- Player state messaging -- */
+function setPlayerState(html, show) {
+  playerState.innerHTML = html;
+  playerState.className = show ? 'show' : '';
+}
+
+/* -- Load & play a channel -- */
+function playChannel(country, idx, shouldPushState = true) {
+  const ch = byCountry[country]?.[idx];
+  if (!ch) return;
+
+  if (shouldPushState) navigateTo("player", { country, channelIdx: idx });
+
+  currentCountry   = country;
   currentChannelIdx = idx;
 
   overlay.classList.add('active');
-  pname.textContent = ch.name;
+  pname.textContent    = ch.name;
   pcountry.textContent = country;
-  setPlayerState(`<div class="spinner" style="width:32px; height:32px; border:3px solid #333; border-top-color:var(--signal); border-radius:50%; animation:spin .8s linear infinite;"></div><div style="margin-top: 10px; font-weight: 600;">Locking Phase Signal…</div>`, true);
 
+  setPlayerState(`
+    <div style="width:36px;height:36px;border-radius:50%;border:3px solid #333;border-top-color:#FF5A1F;animation:spin .8s linear infinite;"></div>
+    <div style="margin-top:10px;font-weight:600;">Locking Phase Signal…</div>
+  `, true);
+
+  showControls();
   cleanupPlayer();
 
-  // Watchdog system checks link response timeouts (12 seconds default)
   watchdog = setTimeout(() => {
-    setPlayerState(`<div style="color:var(--danger); font-weight:bold; font-size:16px;">Signal Tuner Timeout</div><div style="font-size:12px; margin-top:4px;">No active HLS carrier wave detected.</div><button id="retryBtn" style="margin-top:16px;">Retuning Signal</button>`, true);
-    document.getElementById('retryBtn')?.focus();
+    setPlayerState(`
+      <div style="color:#FB7185;font-weight:bold;font-size:16px;">Signal Timeout</div>
+      <div style="font-size:12px;margin-top:4px;">No active carrier wave detected.</div>
+      <button id="retryBtn">Retry</button>
+    `, true);
     document.getElementById('retryBtn')?.addEventListener('click', () => playChannel(country, idx, false));
   }, 12000);
 
-  video.addEventListener('playing', onPlaying, {once:true});
-  video.addEventListener('error', onVideoError, {once:true});
+  video.addEventListener('playing', onPlaying, { once: true });
+  video.addEventListener('error',   onVideoError, { once: true });
 
-  if(window.Hls && window.Hls.isSupported()){
-    hls = new Hls({ 
-      maxBufferLength: 30,
-      manifestLoadingMaxRetry: 3,
-      levelLoadingMaxRetry: 3
-    });
+  if (window.Hls && window.Hls.isSupported()) {
+    hls = new Hls({ maxBufferLength: 30, manifestLoadingMaxRetry: 3, levelLoadingMaxRetry: 3 });
     hls.loadSource(ch.url);
     hls.attachMedia(video);
-    hls.on(Hls.Events.ERROR, (event, data) => {
-      if(data.fatal) onVideoError();
-    });
-    video.play().catch(()=>{});
-  } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+    hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) onVideoError(); });
+    video.play().catch(() => {});
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = ch.url;
-    video.play().catch(()=>{});
+    video.play().catch(() => {});
   } else {
     video.src = ch.url;
-    video.play().catch(()=>{});
+    video.play().catch(() => {});
   }
 }
 
-function onPlaying(){
+function onPlaying() {
   clearTimeout(watchdog);
-  setPlayerState("", false);
-  video.focus();
+  setPlayerState('', false);
+  updateProgress();
+  scheduleHideControls();
 }
 
-function onVideoError(){
+function onVideoError() {
   clearTimeout(watchdog);
-  setPlayerState(`<div style="color:var(--danger); font-weight:bold; font-size:16px;">Loss of Transmission Carrier</div><div style="font-size:12px; margin-top:4px;">Cannot parse media feed elements.</div><button id="retryBtn2" style="margin-top:16px;">Go Back</button>`, true);
-  document.getElementById('retryBtn2')?.focus();
+  setPlayerState(`
+    <div style="color:#FB7185;font-weight:bold;font-size:16px;">Loss of Carrier</div>
+    <div style="font-size:12px;margin-top:4px;">Cannot parse media feed.</div>
+    <button id="retryBtn2">Go Back</button>
+  `, true);
   document.getElementById('retryBtn2')?.addEventListener('click', closePlayer);
 }
 
-function cleanupPlayer(){
-  if(hls){ hls.destroy(); hls = null; }
+function cleanupPlayer() {
+  if (hls) { hls.destroy(); hls = null; }
   video.removeAttribute('src');
   video.load();
   clearTimeout(watchdog);
+  clearTimeout(hideControlsTimer);
 }
 
 function closePlayerOverlayOnly() {
   cleanupPlayer();
   overlay.classList.remove('active');
-  setPlayerState("", false);
+  setPlayerState('', false);
+  showControls(); // reset for next open
 }
 
-function closePlayer(){
+function closePlayer() {
   closePlayerOverlayOnly();
-  window.history.back(); // Pops state in history to sync screen state representation
+  window.history.back();
 }
 
-document.getElementById('closePlayer').addEventListener('click', closePlayer);
-document.getElementById('closePlayer').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    closePlayer();
-  }
+document.getElementById('closePlayer').addEventListener('click', (e) => {
+  e.stopPropagation();
+  closePlayer();
 });
 
-/* ---------------- Search ---------------- */
+/* ---- Search ---- */
 searchInput.addEventListener('input', (e) => {
-  if(currentView === "countries") renderCountries(e.target.value);
+  if (currentView === "countries") renderCountries(e.target.value);
 });
 
-/* ---------------- Setup Application ---------------- */
+/* ---- Boot ---- */
 initTheme();
 loadPlaylist();
 
-/* ---------------- PWA integration ---------------- */
-if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  });
+/* ---- PWA ---- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
 
 let deferredInstall = null;
@@ -900,12 +1187,12 @@ const installBtn = document.getElementById('installBtn');
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstall = e;
-  if(installBtn) installBtn.style.display = 'flex';
+  if (installBtn) installBtn.style.display = 'flex';
 });
 
-if(installBtn){
+if (installBtn) {
   installBtn.addEventListener('click', async () => {
-    if(!deferredInstall) return;
+    if (!deferredInstall) return;
     deferredInstall.prompt();
     await deferredInstall.userChoice;
     deferredInstall = null;
@@ -914,7 +1201,7 @@ if(installBtn){
 }
 
 window.addEventListener('appinstalled', () => {
-  if(installBtn) installBtn.style.display = 'none';
+  if (installBtn) installBtn.style.display = 'none';
 });
 </script>
 </body>
