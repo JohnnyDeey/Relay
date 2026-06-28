@@ -8,6 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A0E12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RELAY">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="shortcut icon" href="icons/favicon.ico">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
   :root{
     --bg:#0A0E12;
@@ -106,6 +118,24 @@
   }
   .search input::placeholder{color:var(--muted);}
   .search svg{flex-shrink:0;opacity:.6;}
+
+  .install-btn{
+    display:none;
+    align-items:center;
+    gap:8px;
+    margin-top:12px;
+    background:var(--signal);
+    color:#1A0A02;
+    border:none;
+    border-radius:999px;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+    justify-content:center;
+  }
+  .install-btn:active{opacity:.85;}
 
   main{flex:1;padding:14px 16px 32px;}
 
@@ -271,6 +301,10 @@
       <span class="freq mono" id="freqLabel">TUNING…</span>
     </div>
     <div class="dial"><div class="sweep" id="sweep"></div></div>
+    <button id="installBtn" class="install-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Install RELAY
+    </button>
     <div class="search" id="searchWrap" style="display:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off">
@@ -568,6 +602,36 @@ searchInput.addEventListener('input', (e) => {
 });
 
 loadPlaylist();
+
+/* ---------------- PWA install + service worker ---------------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+let deferredInstall = null;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+  if(installBtn) installBtn.style.display = 'flex';
+});
+
+if(installBtn){
+  installBtn.addEventListener('click', async () => {
+    if(!deferredInstall) return;
+    deferredInstall.prompt();
+    await deferredInstall.userChoice;
+    deferredInstall = null;
+    installBtn.style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  if(installBtn) installBtn.style.display = 'none';
+});
 </script>
 </body>
 </html>
