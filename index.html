@@ -124,7 +124,26 @@
   @media (prefers-reduced-motion: reduce) { .dial .sweep { animation: none; } }
   @keyframes sweep { from { left: -30%; } to { left: 100%; } }
 
-  .install-btn {
+  /* ---- Search bars ---- */
+  #homeSearches { flex-direction: column; gap: 8px; margin-top: 12px; }
+
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 2px solid var(--line);
+    border-radius: var(--radius); padding: 10px 14px;
+  }
+  .search-bar input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: 14px; width: 100%; font-family: inherit;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-bar svg { flex-shrink: 0; color: var(--muted); }
+  .search-bar:focus-within { border-color: var(--focus-ring); }
+
+  /* Brand home button hover */
+  #homeBtn:hover h1 { color: var(--signal); }
+  #homeBtn:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; border-radius: 4px; }
+  #homeBtn h1 { transition: color 0.15s; }
     display: none; align-items: center; gap: 8px; margin-top: 10px;
     background: var(--text); color: var(--bg); border: 2px solid var(--line);
     border-radius: var(--radius); padding: 10px 16px; font-size: 13px;
@@ -385,25 +404,18 @@
 <div id="app">
   <header>
     <div class="header-top">
-      <div class="brand">
+      <div class="brand" id="homeBtn" role="button" tabindex="0" aria-label="Go to homepage" style="cursor:pointer;">
         <span class="mark"></span>
         <h1>RELAY</h1>
         <span class="freq mono" id="freqLabel">TUNING…</span>
       </div>
       <div class="header-actions">
-        <!-- FIX 1 & 2: Compact search pill inline in header -->
-        <div class="header-search" id="searchWrap">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false">
-        </div>
-
-        <!-- FIX 4: Burger menu button → opens favourites drawer -->
+        <!-- Burger menu button → opens favourites drawer -->
         <button class="icon-header-btn" id="menuBtn" aria-label="Favourites menu" tabindex="0">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-
         <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle theme">
           <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -413,10 +425,31 @@
       </div>
     </div>
     <div class="dial"><div class="sweep"></div></div>
+
+    <!-- HOME: two search bars, shown only on countries view -->
+    <div id="homeSearches" style="display:none;">
+      <!-- Search bar 1: filter by country name -->
+      <div class="search-bar" id="searchWrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false">
+      </div>
+      <!-- Search bar 2: search any channel by keyword across all countries -->
+      <div class="search-bar" id="channelSearchWrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="channelSearchInput" type="text" placeholder="Search any channel, e.g. "action movies"…" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
     <button id="installBtn" class="install-btn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Install RELAY PWA
     </button>
+
+    <!-- GRID view: single channel search, shown only inside a country -->
+    <div class="search-bar" id="gridSearchWrap" style="display:none;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="gridSearchInput" type="text" placeholder="Search channels…" autocomplete="off" spellcheck="false">
+    </div>
   </header>
 
   <main id="main">
@@ -522,14 +555,18 @@ function toggleFav(ch, country) {
   saveFavs(favs);
 }
 
-const mainEl      = document.getElementById('main');
-const freqLabel   = document.getElementById('freqLabel');
-const searchWrap  = document.getElementById('searchWrap');
-const searchInput = document.getElementById('searchInput');
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon   = document.getElementById('themeIcon');
-const themeText   = document.getElementById('themeText');
-const themeMeta   = document.getElementById('themeMeta');
+const mainEl            = document.getElementById('main');
+const freqLabel         = document.getElementById('freqLabel');
+const homeSearches      = document.getElementById('homeSearches');
+const searchInput       = document.getElementById('searchInput');         // country filter
+const channelSearchInput= document.getElementById('channelSearchInput'); // global channel search
+const gridSearchWrap    = document.getElementById('gridSearchWrap');
+const gridSearchInput   = document.getElementById('gridSearchInput');     // in-country search
+const themeToggle       = document.getElementById('themeToggle');
+const themeIcon         = document.getElementById('themeIcon');
+const themeText         = document.getElementById('themeText');
+const themeMeta         = document.getElementById('themeMeta');
+const homeBtn           = document.getElementById('homeBtn');
 
 /* ---- Theme ---- */
 function initTheme() {
@@ -550,6 +587,10 @@ function enableLightMode() {
   localStorage.setItem('relay_theme', 'light');
 }
 themeToggle.addEventListener('click', () => document.body.classList.contains('dark-theme') ? enableLightMode() : enableDarkMode());
+
+/* ---- RELAY logo → always goes home ---- */
+homeBtn.addEventListener('click', () => { if (currentView !== 'countries') showCountriesView(); });
+homeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (currentView !== 'countries') showCountriesView(); } });
 
 /* ---- FIX 4: Burger menu / Favourites drawer ---- */
 const menuDrawer  = document.getElementById('menuDrawer');
@@ -778,9 +819,10 @@ function showCountriesView(push = true) {
   if (push) navigateTo('countries');
   currentView = 'countries';
   closePlayerOverlayOnly();
+  homeSearches.style.display = 'flex';
+  gridSearchWrap.style.display = 'none';
   searchInput.value = '';
-  searchInput.placeholder = 'Find a country…';
-  searchWrap.style.display = 'flex';
+  channelSearchInput.value = '';
   renderCountries('');
 }
 
@@ -812,9 +854,11 @@ function openCountry(country, push = true) {
   if (push) navigateTo('grid', { country });
   currentCountry = country; currentView = 'grid';
   closePlayerOverlayOnly();
-  searchInput.value = '';
-  searchInput.placeholder = 'Search channels in ' + country + '…';
-  searchWrap.style.display = 'flex';
+  // hide home searches, show single grid channel search
+  homeSearches.style.display = 'none';
+  gridSearchWrap.style.display = 'flex';
+  gridSearchInput.value = '';
+  gridSearchInput.placeholder = 'Search channels in ' + country + '…';
   const all = byCountry[country] || [];
   mainEl.innerHTML = `
     <button class="back-row" id="backBtn" tabindex="0" aria-label="Back to countries">
@@ -889,7 +933,7 @@ function renderGrid(filter) {
 /* FIX 2: Global channel search — searches ALL channels across all countries */
 function renderGlobalSearch(filter) {
   const lc = filter.trim().toLowerCase();
-  if (!lc) { renderCountries(''); return; }
+  if (!lc) { renderCountries(''); currentView = 'countries'; return; }
   const results = [];
   for (const country of countryNames) {
     for (const ch of (byCountry[country]||[])) {
@@ -947,13 +991,28 @@ function renderGlobalSearch(filter) {
   });
 }
 
+/* ---- Search input wiring ---- */
+// Bar 1 (home): filter countries by name
 searchInput.addEventListener('input', e => {
   if (currentView === 'countries' || currentView === 'global-search') {
-    currentView = 'global-search';
-    renderGlobalSearch(e.target.value);
-  } else if (currentView === 'grid') {
-    renderGrid(e.target.value);
+    currentView = 'countries';
+    renderCountries(e.target.value);
+    // clear channel search so they don't conflict
+    channelSearchInput.value = '';
   }
+});
+
+// Bar 2 (home): search any channel keyword across all countries
+channelSearchInput.addEventListener('input', e => {
+  currentView = 'global-search';
+  renderGlobalSearch(e.target.value);
+  // clear country search so they don't conflict
+  searchInput.value = '';
+});
+
+// Bar 3 (grid/country view): filter channels within the open country
+gridSearchInput.addEventListener('input', e => {
+  if (currentView === 'grid') renderGrid(e.target.value);
 });
 
 /* ---- PLAYER ---- */
