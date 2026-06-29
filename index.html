@@ -130,7 +130,7 @@
   .search-bar {
     display: flex; align-items: center; gap: 10px;
     background: var(--surface); border: 2px solid var(--line);
-    border-radius: var(--radius); padding: 10px 14px;
+    border-radius: 999px; padding: 10px 14px;
   }
   .search-bar input {
     background: none; border: none; outline: none;
@@ -411,6 +411,12 @@
       </div>
       <div class="header-actions">
         <!-- Burger menu button → opens favourites drawer -->
+        <button class="icon-header-btn" id="refreshBtn" aria-label="Check for updates" tabindex="0">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <polyline points="23 4 23 10 17 10"/>
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+  </svg>
+</button>
         <button class="icon-header-btn" id="menuBtn" aria-label="Favourites menu" tabindex="0">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -1190,6 +1196,16 @@ if (installBtn) {
     deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; installBtn.style.display = 'none';
   });
 }
+  document.getElementById('refreshBtn').addEventListener('click', async () => {
+  if ('serviceWorker' in navigator) {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      await reg.update();
+      reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }
+  location.reload(true);
+});
 window.addEventListener('appinstalled', () => { if (installBtn) installBtn.style.display = 'none'; });
 </script>
 </body>
