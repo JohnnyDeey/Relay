@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#FFFFFF" id="themeMeta">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,477 +21,362 @@
 
 <style>
   :root {
-    --bg: #FFFFFF;
-    --surface: #F9FBFD;
-    --surface-2: #E8EDF2;
-    --line: #000000;
-    --text: #000000;
-    --muted: #5A6573;
-    --signal: #FF5A1F;
-    --tuned: #0D9488;
-    --danger: #E11D48;
-    --radius: 6px;
-    --focus-ring: #2563EB;
+    --bg: #FFFFFF; --surface: #F9FBFD; --surface-2: #E8EDF2;
+    --line: #000000; --text: #000000; --muted: #5A6573;
+    --signal: #FF5A1F; --tuned: #0D9488; --danger: #E11D48;
+    --radius: 6px; --focus-ring: #2563EB;
   }
-
   body.dark-theme {
-    --bg: #000000;
-    --surface: #101419;
-    --surface-2: #1B232E;
-    --line: #2D394A;
-    --text: #E8EDF2;
-    --muted: #8E9CAE;
-    --signal: #FF6B35;
-    --tuned: #2DD4BF;
-    --danger: #FB7185;
+    --bg: #000000; --surface: #101419; --surface-2: #1B232E;
+    --line: #2D394A; --text: #E8EDF2; --muted: #8E9CAE;
+    --signal: #FF6B35; --tuned: #2DD4BF; --danger: #FB7185;
     --focus-ring: #38BDF8;
   }
-
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-    min-height: 100vh;
-    -webkit-tap-highlight-color: transparent;
-    overscroll-behavior: none;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    background: var(--bg); color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    min-height: 100vh; -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none; transition: background-color 0.2s, color 0.2s;
   }
-
   .mono { font-family: 'IBM Plex Mono', monospace; }
   button { font-family: inherit; }
 
   #app {
-    max-width: 1200px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    padding: 0 16px;
+    max-width: 1200px; margin: 0 auto; min-height: 100vh;
+    display: flex; flex-direction: column; padding: 0 16px;
   }
 
+  /* ---- HEADER ---- */
   header {
-    padding: 24px 0 16px;
+    padding: 16px 0 12px;
     border-bottom: 2px solid var(--line);
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 5;
+    position: sticky; top: 0; background: var(--bg); z-index: 5;
     transition: background-color 0.2s;
   }
 
   .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
   }
 
   .brand { display: flex; align-items: center; gap: 10px; }
-
   .brand .mark {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--signal);
-    box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.2);
-    flex-shrink: 0;
+    width: 10px; height: 10px; border-radius: 50%; background: var(--signal);
+    box-shadow: 0 0 0 3px rgba(255,90,31,0.2); flex-shrink: 0;
   }
+  .brand h1 { font-size: 20px; letter-spacing: .12em; margin: 0; font-weight: 700; }
+  .brand .freq { color: var(--muted); font-size: 12px; letter-spacing: .05em; font-weight: 500; }
 
-  .brand h1 { font-size: 24px; letter-spacing: .12em; margin: 0; font-weight: 700; }
-  .brand .freq { color: var(--muted); font-size: 13px; letter-spacing: .05em; font-weight: 500; }
+  /* ---- HEADER RIGHT: search pill + menu btn + theme btn ---- */
+  .header-actions { display: flex; align-items: center; gap: 8px; }
 
-  .header-actions { display: flex; align-items: center; gap: 12px; }
+  /* FIX 1: Compact inline search pill in the header */
+  .header-search {
+    display: none; /* shown after load */
+    align-items: center; gap: 8px;
+    background: var(--surface); border: 2px solid var(--line);
+    border-radius: 999px; padding: 7px 14px;
+    transition: width 0.3s;
+  }
+  .header-search input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: 14px; width: 180px;
+    font-family: inherit;
+  }
+  @media (max-width: 600px) { .header-search input { width: 110px; } }
+  .header-search input::placeholder { color: var(--muted); }
+  .header-search svg { flex-shrink: 0; color: var(--muted); }
+
+  /* FIX 2: Global search button (magnifier icon) */
+  .icon-header-btn {
+    background: var(--surface); border: 2px solid var(--line);
+    border-radius: var(--radius); color: var(--text);
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .icon-header-btn:hover, .icon-header-btn:focus-visible { background: var(--surface-2); }
+  .icon-header-btn:active { transform: scale(0.95); }
+  .icon-header-btn:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 
   .theme-toggle-btn {
-    background: var(--surface);
-    color: var(--text);
-    border: 2px solid var(--line);
-    border-radius: var(--radius);
-    padding: 8px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: transform 0.1s;
+    background: var(--surface); color: var(--text); border: 2px solid var(--line);
+    border-radius: var(--radius); padding: 7px 12px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: transform 0.1s;
+    white-space: nowrap;
   }
-
   .theme-toggle-btn:active { transform: scale(0.97); }
-
-  .theme-toggle-btn:focus-visible,
-  .country-row:focus-visible,
-  .tile:focus-visible,
-  .pin:focus-visible,
-  .icon-btn:focus-visible,
-  input:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
+  .theme-toggle-btn:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 
   .dial {
-    margin-top: 18px;
-    height: 4px;
-    width: 100%;
+    margin-top: 12px; height: 3px; width: 100%;
     background: repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px 8px);
-    position: relative;
-    border-radius: 2px;
-    overflow: hidden;
+    position: relative; border-radius: 2px; overflow: hidden;
   }
-
   .dial .sweep {
     position: absolute; top: 0; left: 0; height: 100%; width: 30%;
     background: linear-gradient(90deg, transparent, var(--signal), transparent);
     animation: sweep 3.2s linear infinite;
   }
-
   @media (prefers-reduced-motion: reduce) { .dial .sweep { animation: none; } }
   @keyframes sweep { from { left: -30%; } to { left: 100%; } }
 
-  .search {
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface);
-    border: 2px solid var(--line);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-  }
-
-  .search input {
-    background: none; border: none; outline: none;
-    color: var(--text); font-size: 16px; width: 100%; font-family: inherit;
-  }
-
-  .search input::placeholder { color: var(--muted); }
-  .search svg { flex-shrink: 0; opacity: .8; color: var(--text); }
-
   .install-btn {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    margin-top: 12px;
-    background: var(--text);
-    color: var(--bg);
-    border: 2px solid var(--line);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    justify-content: center;
+    display: none; align-items: center; gap: 8px; margin-top: 10px;
+    background: var(--text); color: var(--bg); border: 2px solid var(--line);
+    border-radius: var(--radius); padding: 10px 16px; font-size: 13px;
+    font-weight: 600; cursor: pointer; width: 100%; justify-content: center;
   }
 
-  main { flex: 1; padding: 24px 0 48px; }
+  /* ---- BURGER MENU DRAWER (Favourites) ---- */
+  #menuDrawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 320px; max-width: 92vw;
+    background: var(--bg); border-left: 2px solid var(--line);
+    z-index: 100; transform: translateX(100%);
+    transition: transform 0.3s ease; overflow-y: auto;
+    padding: 0 0 40px;
+  }
+  #menuDrawer.open { transform: translateX(0); }
+
+  #menuOverlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 99; display: none; opacity: 0; transition: opacity 0.3s;
+  }
+  #menuOverlay.open { display: block; opacity: 1; }
+
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 20px 16px; border-bottom: 2px solid var(--line);
+    position: sticky; top: 0; background: var(--bg); z-index: 1;
+  }
+  .drawer-title { font-size: 16px; font-weight: 700; letter-spacing: .06em; }
+
+  .fav-country-group { padding: 0 16px; margin-top: 16px; }
+  .fav-country-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    color: var(--muted); text-transform: uppercase;
+    padding: 8px 4px 6px; border-bottom: 1px solid var(--line); margin-bottom: 8px;
+  }
+  .fav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 8px; border-radius: var(--radius); cursor: pointer;
+    transition: background 0.15s; tabindex: 0;
+  }
+  .fav-item:hover, .fav-item:focus { background: var(--surface-2); outline: none; }
+  .fav-item:focus-visible { outline: 3px solid var(--focus-ring); }
+  .fav-logo {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface-2); border: 2px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .fav-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .fav-logo .fav-init { font-size: 13px; font-weight: 700; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+  .fav-name { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fav-remove {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    padding: 4px; border-radius: 4px; display: flex; align-items: center;
+    transition: color 0.15s;
+  }
+  .fav-remove:hover { color: var(--danger); }
+  .fav-empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+  main { flex: 1; padding: 20px 0 48px; }
 
   .status {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 16px; padding: 80px 20px; color: var(--muted); text-align: center; font-size: 15px;
   }
-
   .status .spinner {
     width: 32px; height: 32px; border-radius: 50%;
     border: 3px solid var(--surface-2); border-top-color: var(--signal);
     animation: spin 0.8s linear infinite;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .section-label {
-    font-size: 12px; letter-spacing: .12em; color: var(--muted);
-    margin: 8px 2px 12px; font-weight: 700; text-transform: uppercase;
+    font-size: 11px; letter-spacing: .12em; color: var(--muted);
+    margin: 6px 2px 10px; font-weight: 700; text-transform: uppercase;
   }
 
-  .pins {
-    display: flex; gap: 10px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 12px;
-    scrollbar-width: none;
-  }
-
+  .pins { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 8px; scrollbar-width: none; }
   .pins::-webkit-scrollbar { display: none; }
-
   .pin {
-    flex-shrink: 0;
-    background: var(--surface);
-    border: 2px solid var(--line);
-    color: var(--text);
-    padding: 10px 18px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex; align-items: center; gap: 8px;
-    cursor: pointer;
-    transition: background-color 0.1s;
+    flex-shrink: 0; background: var(--surface); border: 2px solid var(--line);
+    color: var(--text); padding: 8px 16px; border-radius: 999px;
+    font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;
+    cursor: pointer; transition: background-color 0.1s;
   }
-
   .pin:hover, .pin:focus { background: var(--surface-2); }
   .pin:active { transform: scale(.97); }
-  .pin .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tuned); }
+  .pin:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+  .pin .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tuned); }
 
-  .country-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
+  .country-list { display: grid; grid-template-columns: 1fr; gap: 8px; }
   @media (min-width: 640px) { .country-list { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 960px) { .country-list { grid-template-columns: repeat(3, 1fr); } }
 
   .country-row {
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--surface);
-    border: 2px solid var(--line);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    cursor: pointer;
-    transition: background-color 0.15s, transform 0.1s;
+    background: var(--surface); border: 2px solid var(--line);
+    border-radius: var(--radius); padding: 14px 18px;
+    cursor: pointer; transition: background-color 0.15s, transform 0.1s;
   }
-
-  .country-row:hover, .country-row:focus {
-    background: var(--surface-2);
-    transform: translateY(-1px);
-  }
-
-  .country-name { font-size: 16px; font-weight: 600; }
-  .country-meta { display: flex; align-items: center; gap: 14px; }
-
-  .bars { display: flex; gap: 3px; align-items: flex-end; height: 16px; }
-  .bars span { width: 4px; background: var(--surface-2); border-radius: 1px; }
+  .country-row:hover, .country-row:focus { background: var(--surface-2); transform: translateY(-1px); }
+  .country-row:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+  .country-name { font-size: 15px; font-weight: 600; }
+  .country-meta { display: flex; align-items: center; gap: 12px; }
+  .bars { display: flex; gap: 3px; align-items: flex-end; height: 14px; }
+  .bars span { width: 3px; background: var(--surface-2); border-radius: 1px; }
   .bars span.on { background: var(--tuned); }
-
-  .count { font-size: 12px; color: var(--muted); min-width: 60px; text-align: right; font-weight: 500; }
-  .empty { color: var(--muted); text-align: center; padding: 60px 20px; font-size: 15px; }
+  .count { font-size: 11px; color: var(--muted); min-width: 52px; text-align: right; font-weight: 500; }
+  .empty { color: var(--muted); text-align: center; padding: 50px 20px; font-size: 14px; }
 
   .back-row {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 24px; cursor: pointer;
-    background: none; border: none; padding: 0; color: inherit; width: fit-content;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    cursor: pointer; background: none; border: none; padding: 0; color: inherit; width: fit-content;
   }
+  .back-row:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; border-radius: 4px; }
+  .back-row .country-title { font-size: 20px; font-weight: 700; text-align: left; }
+  .back-row .country-sub { font-size: 12px; color: var(--muted); margin-top: 2px; text-align: left; }
 
-  .back-row .country-title { font-size: 22px; font-weight: 700; text-align: left; }
-  .back-row .country-sub { font-size: 13px; color: var(--muted); margin-top: 3px; text-align: left; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+  @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 18px; } }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 16px;
-  }
-
-  @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; } }
-
+  /* ---- TILE with favourite star ---- */
   .tile {
-    background: var(--surface);
-    border: 2px solid var(--line);
-    border-radius: var(--radius);
-    padding: 20px 12px;
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
-    cursor: pointer;
-    text-align: center;
-    position: relative;
+    background: var(--surface); border: 2px solid var(--line);
+    border-radius: var(--radius); padding: 18px 10px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    cursor: pointer; text-align: center; position: relative;
     transition: background-color 0.15s, transform 0.1s;
   }
-
   .tile:hover, .tile:focus { background: var(--surface-2); transform: translateY(-2px); }
+  .tile:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+
+  /* FIX 3: Favourite star button on tile */
+  .fav-star {
+    position: absolute; top: 6px; right: 6px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+    color: var(--muted); border-radius: 4px;
+    transition: color 0.15s, transform 0.1s;
+    z-index: 2;
+  }
+  .fav-star:hover { color: #FBBF24; transform: scale(1.2); }
+  .fav-star.active { color: #FBBF24; }
+  .fav-star:focus-visible { outline: 3px solid var(--focus-ring); }
 
   .logo-wrap {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: var(--surface-2);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-    border: 2px solid var(--line);
-    flex-shrink: 0;
+    width: 68px; height: 68px; border-radius: 50%;
+    background: var(--surface-2); display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 2px solid var(--line); flex-shrink: 0;
   }
-
   .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
-  .logo-wrap .initials { font-size: 20px; font-weight: 700; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
-
+  .logo-wrap .initials { font-size: 18px; font-weight: 700; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
   .tile-name {
-    font-size: 13px; line-height: 1.4; font-weight: 600;
+    font-size: 12px; line-height: 1.4; font-weight: 600;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: break-word;
+    overflow: hidden; word-break: break-word;
   }
 
-  /* =====================================================
-     PLAYER OVERLAY — fully custom controls, no native UI
-     ===================================================== */
+  /* ---- PLAYER OVERLAY ---- */
   #player-overlay {
-    position: fixed; inset: 0;
-    background: #000000;
-    display: none; flex-direction: column;
-    z-index: 50;
+    position: fixed; inset: 0; background: #000;
+    display: none; flex-direction: column; z-index: 50;
   }
-
   #player-overlay.active { display: flex; }
 
-  /* The video fills everything — NO native controls */
   #video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; inset: 0; width: 100%; height: 100%;
     background: #000;
+    /* FIX 6: start with contain, toggled by JS */
     object-fit: contain;
-    /* controls attribute removed — we manage UI ourselves */
   }
 
-  /* ---- Loading / error state centered over video ---- */
   #playerState {
-    position: absolute;
-    inset: 0;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    background: rgba(0,0,0,0.82);
-    color: #ccc;
-    font-size: 14px;
-    text-align: center;
-    padding: 0 30px;
-    z-index: 3;
-    pointer-events: none;
+    position: absolute; inset: 0; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; background: rgba(0,0,0,0.82); color: #ccc;
+    font-size: 14px; text-align: center; padding: 0 30px; z-index: 3; pointer-events: none;
   }
-
-  #playerState.show {
-    display: flex;
-    pointer-events: auto;
-  }
-
+  #playerState.show { display: flex; pointer-events: auto; }
   #playerState button {
-    pointer-events: auto;
-    background: #fff; border: 2px solid #fff; color: #000;
-    padding: 12px 24px; border-radius: 6px;
-    font-size: 14px; font-weight: 700; cursor: pointer;
-    margin-top: 8px;
+    pointer-events: auto; background: #fff; border: 2px solid #fff; color: #000;
+    padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px;
   }
 
-  /* ---- Custom control bar — slides in/out ---- */
+  /* ---- PLAYER CONTROLS ---- */
   #playerControls {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    z-index: 4;
-    /* gradient only renders when visible — no shadow bleeding through when hidden */
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 4;
     background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 70%, transparent 100%);
     padding: 36px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+    display: flex; flex-direction: column; gap: 14px;
     transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
   }
+  #playerControls.hidden { opacity: 0; transform: translateY(6px); pointer-events: none; visibility: hidden; }
 
-  #playerControls.hidden {
-    opacity: 0;
-    transform: translateY(6px);
-    pointer-events: none;
-    visibility: hidden; /* removes it from paint entirely — no shadow */
-  }
-
-  .ctrl-top {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .ctrl-info { flex: 1; overflow: hidden; }
-  .ctrl-name { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ctrl-country { font-size: 12px; color: #8E9CAE; margin-top: 2px; }
+  .ctrl-bottom { display: flex; align-items: center; gap: 10px; }
 
   .ctrl-btn {
-    background: rgba(255,255,255,0.12);
-    border: 2px solid rgba(255,255,255,0.25);
-    color: #fff;
-    border-radius: 8px;
-    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25);
+    color: #fff; border-radius: 8px; width: 52px; height: 52px;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.15s, transform 0.1s;
+    cursor: pointer; flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s, outline 0.1s;
     -webkit-tap-highlight-color: transparent;
   }
-
-  .ctrl-btn:hover, .ctrl-btn:focus { background: rgba(255,255,255,0.25); outline: none; }
-  .ctrl-btn:focus-visible { outline: 3px solid #38BDF8; outline-offset: 2px; }
+  /* FIX 5: Much more visible focus ring for TV remote navigation */
+  .ctrl-btn:focus { outline: none; }
+  .ctrl-btn:focus-visible,
+  .ctrl-btn.tv-focus {
+    outline: none;
+    background: rgba(255,255,255,0.35);
+    border-color: #FFFFFF;
+    box-shadow: 0 0 0 3px #38BDF8;
+    transform: scale(1.1);
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.25); }
   .ctrl-btn:active { transform: scale(0.92); }
 
-  /* Big center play/pause button */
   #playPauseBtn {
-    width: 68px; height: 68px;
-    background: rgba(255,255,255,0.18);
-    border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.4);
-  }
-
-  /* Progress bar row */
-  .ctrl-bottom {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    width: 68px; height: 68px; background: rgba(255,255,255,0.18);
+    border-radius: 50%; border: 3px solid rgba(255,255,255,0.4);
   }
 
   .time-label { font-size: 12px; color: #ccc; font-family: 'IBM Plex Mono', monospace; min-width: 40px; }
-
-  /* Seek bar — live streams get a pulsing dot instead */
   .progress-wrap {
-    flex: 1;
-    height: 4px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 2px;
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
+    flex: 1; height: 4px; background: rgba(255,255,255,0.2);
+    border-radius: 2px; position: relative; cursor: pointer; overflow: hidden;
   }
+  #progressBar { height: 100%; width: 0%; background: #FF5A1F; border-radius: 2px; transition: width 0.5s linear; }
 
-  #progressBar {
-    height: 100%;
-    width: 0%;
-    background: #FF5A1F;
-    border-radius: 2px;
-    transition: width 0.5s linear;
-  }
+  #liveBadge { display: none; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .08em; }
+  #liveBadge .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF5A1F; animation: livepulse 1.4s ease-in-out infinite; }
+  @keyframes livepulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
-  /* LIVE badge shown for live/non-seekable streams */
-  #liveBadge {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: .08em;
-  }
-
-  #liveBadge .live-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #FF5A1F;
-    animation: livepulse 1.4s ease-in-out infinite;
-  }
-
-  @keyframes livepulse { 0%,100% { opacity:1; } 50% { opacity: 0.3; } }
-
-  /* Header bar at top — same back button */
   #playerHeader {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
+    position: absolute; top: 0; left: 0; right: 0; z-index: 4;
+    display: flex; align-items: center; padding: 12px 16px;
     background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, transparent 100%);
     transition: opacity 0.35s ease, visibility 0.35s;
   }
-
   #playerHeader.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+
+  /* FIX 6: Fit mode pill */
+  #fitModeBtn {
+    /* slightly wider to show label */
+    width: auto; padding: 0 12px; gap: 6px; font-size: 11px; font-weight: 700;
+    letter-spacing: .06em; white-space: nowrap;
+  }
 
   .icon-btn {
     background: none; border: none; color: inherit;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; padding: 8px; border-radius: var(--radius);
   }
-
   .icon-btn:hover { background: rgba(255,255,255,0.12); }
 </style>
 </head>
@@ -507,84 +391,86 @@
         <span class="freq mono" id="freqLabel">TUNING…</span>
       </div>
       <div class="header-actions">
-        <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle dark and light themes">
-          <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- FIX 1 & 2: Compact search pill inline in header -->
+        <div class="header-search" id="searchWrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false">
+        </div>
+
+        <!-- FIX 4: Burger menu button → opens favourites drawer -->
+        <button class="icon-header-btn" id="menuBtn" aria-label="Favourites menu" tabindex="0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+
+        <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle theme">
+          <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
-          <span id="themeText">DARK MODE</span>
+          <span id="themeText">DARK</span>
         </button>
       </div>
     </div>
-
-    <div class="dial"><div class="sweep" id="sweep"></div></div>
-
+    <div class="dial"><div class="sweep"></div></div>
     <button id="installBtn" class="install-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Install RELAY PWA
     </button>
-
-    <div class="search" id="searchWrap" style="display:none;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="searchInput" type="text" placeholder="Find a country or region…" autocomplete="off">
-    </div>
   </header>
 
   <main id="main">
     <div class="status">
       <div class="spinner"></div>
-      <div>Scanning global broadcast index…<br><span class="mono" style="opacity:.7; font-size: 13px; margin-top: 4px; display: inline-block;">iptv-org · index.country.m3u</span></div>
+      <div>Scanning global broadcast index…<br><span class="mono" style="opacity:.7;font-size:13px;">iptv-org · index.country.m3u</span></div>
     </div>
   </main>
 </div>
 
-<!-- ===================== PLAYER OVERLAY ===================== -->
+<!-- FIX 4: Favourites drawer -->
+<div id="menuOverlay"></div>
+<div id="menuDrawer" role="dialog" aria-label="Favourites">
+  <div class="drawer-header">
+    <span class="drawer-title">★ FAVOURITES</span>
+    <button class="icon-header-btn" id="menuClose" aria-label="Close menu" tabindex="0">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div id="favContent"></div>
+</div>
+
+<!-- PLAYER OVERLAY -->
 <div id="player-overlay">
-
-  <!-- Raw video — no controls attribute! -->
   <video id="video" playsinline></video>
-
-  <!-- Loading / error messages -->
   <div id="playerState"></div>
 
-  <!-- Top gradient bar with back button + channel name -->
   <div id="playerHeader">
     <button class="ctrl-btn" id="closePlayer" aria-label="Close player" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="19" y1="12" x2="5" y2="12"/>
-        <polyline points="12 19 5 12 12 5"/>
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
       </svg>
     </button>
     <div style="flex:1;overflow:hidden;padding-left:10px;">
-      <div class="ctrl-name mono" id="pname" style="font-size:15px;">—</div>
-      <div class="ctrl-country" id="pcountry" style="font-size:12px;color:#8E9CAE;margin-top:2px;"></div>
+      <div class="mono" id="pname" style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+      <div id="pcountry" style="font-size:12px;color:#8E9CAE;margin-top:2px;"></div>
     </div>
   </div>
 
-  <!-- Custom control bar at bottom -->
   <div id="playerControls">
     <div class="ctrl-bottom">
-      <!-- Play / Pause centered -->
-      <button class="ctrl-btn" id="playPauseBtn" aria-label="Play or pause">
+      <button class="ctrl-btn" id="playPauseBtn" aria-label="Play or pause" tabindex="0">
         <svg id="ppIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-          <!-- pause icon by default while playing -->
           <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
         </svg>
       </button>
 
-      <!-- Live badge / progress bar -->
-      <div id="liveBadge">
-        <span class="live-dot"></span>
-        LIVE
-      </div>
-
-      <div class="progress-wrap" id="progressWrap" style="display:none;">
-        <div id="progressBar"></div>
-      </div>
-
+      <div id="liveBadge"><span class="live-dot"></span>LIVE</div>
+      <div class="progress-wrap" id="progressWrap" style="display:none;"><div id="progressBar"></div></div>
       <span class="time-label" id="timeLabel"></span>
 
-      <!-- Volume mute toggle -->
-      <button class="ctrl-btn" id="muteBtn" aria-label="Toggle mute">
+      <button class="ctrl-btn" id="muteBtn" aria-label="Toggle mute" tabindex="0">
         <svg id="muteIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
@@ -592,8 +478,13 @@
         </svg>
       </button>
 
-      <!-- Fullscreen toggle -->
-      <button class="ctrl-btn" id="fsBtn" aria-label="Toggle fullscreen">
+      <!-- FIX 6: Fit mode cycle button -->
+      <button class="ctrl-btn" id="fitModeBtn" aria-label="Toggle fit mode" tabindex="0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20"/></svg>
+        <span id="fitLabel">FIT</span>
+      </button>
+
+      <button class="ctrl-btn" id="fsBtn" aria-label="Toggle fullscreen" tabindex="0">
         <svg id="fsIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
           <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
@@ -601,8 +492,7 @@
       </button>
     </div>
   </div>
-
-</div><!-- /player-overlay -->
+</div>
 
 <script>
 const M3U_URL = "https://iptv-org.github.io/iptv/index.country.m3u";
@@ -614,80 +504,162 @@ let currentView = "loading";
 let currentCountry = null;
 let currentChannelIdx = null;
 
-const mainEl       = document.getElementById('main');
-const freqLabel    = document.getElementById('freqLabel');
-const searchWrap   = document.getElementById('searchWrap');
-const searchInput  = document.getElementById('searchInput');
-const themeToggle  = document.getElementById('themeToggle');
-const themeIcon    = document.getElementById('themeIcon');
-const themeText    = document.getElementById('themeText');
-const themeMeta    = document.getElementById('themeMeta');
+/* ---- FIX 3+4: Favourites stored in localStorage ---- */
+function loadFavs() {
+  try { return JSON.parse(localStorage.getItem('relay_favs') || '[]'); } catch { return []; }
+}
+function saveFavs(favs) {
+  localStorage.setItem('relay_favs', JSON.stringify(favs));
+}
+function isFav(country, name) {
+  return loadFavs().some(f => f.country === country && f.name === name);
+}
+function toggleFav(ch, country) {
+  let favs = loadFavs();
+  const idx = favs.findIndex(f => f.country === country && f.name === ch.name);
+  if (idx >= 0) { favs.splice(idx, 1); }
+  else { favs.push({ country, name: ch.name, logo: ch.logo, url: ch.url }); }
+  saveFavs(favs);
+}
+
+const mainEl      = document.getElementById('main');
+const freqLabel   = document.getElementById('freqLabel');
+const searchWrap  = document.getElementById('searchWrap');
+const searchInput = document.getElementById('searchInput');
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon   = document.getElementById('themeIcon');
+const themeText   = document.getElementById('themeText');
+const themeMeta   = document.getElementById('themeMeta');
 
 /* ---- Theme ---- */
 function initTheme() {
   const stored = localStorage.getItem('relay_theme');
-  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    enableDarkMode();
-  } else {
-    enableLightMode();
-  }
+  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) enableDarkMode();
+  else enableLightMode();
 }
-
 function enableDarkMode() {
   document.body.classList.add('dark-theme');
-  themeText.textContent = "LIGHT MODE";
-  themeMeta.setAttribute('content', '#000000');
-  themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle>
-    <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-    <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+  themeText.textContent = "LIGHT"; themeMeta.setAttribute('content', '#000000');
+  themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
   localStorage.setItem('relay_theme', 'dark');
 }
-
 function enableLightMode() {
   document.body.classList.remove('dark-theme');
-  themeText.textContent = "DARK MODE";
-  themeMeta.setAttribute('content', '#FFFFFF');
+  themeText.textContent = "DARK"; themeMeta.setAttribute('content', '#FFFFFF');
   themeIcon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
   localStorage.setItem('relay_theme', 'light');
 }
+themeToggle.addEventListener('click', () => document.body.classList.contains('dark-theme') ? enableLightMode() : enableDarkMode());
 
-themeToggle.addEventListener('click', () => {
-  document.body.classList.contains('dark-theme') ? enableLightMode() : enableDarkMode();
-});
+/* ---- FIX 4: Burger menu / Favourites drawer ---- */
+const menuDrawer  = document.getElementById('menuDrawer');
+const menuOverlay = document.getElementById('menuOverlay');
+const menuBtn     = document.getElementById('menuBtn');
+const menuClose   = document.getElementById('menuClose');
+
+function openMenu() {
+  renderFavDrawer();
+  menuDrawer.classList.add('open');
+  menuOverlay.classList.add('open');
+  menuClose.focus();
+}
+function closeMenu() {
+  menuDrawer.classList.remove('open');
+  menuOverlay.classList.remove('open');
+  menuBtn.focus();
+}
+menuBtn.addEventListener('click', openMenu);
+menuClose.addEventListener('click', closeMenu);
+menuOverlay.addEventListener('click', closeMenu);
+menuBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMenu(); } });
+menuClose.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeMenu(); } });
+
+function renderFavDrawer() {
+  const favs = loadFavs();
+  const favContent = document.getElementById('favContent');
+  if (favs.length === 0) {
+    favContent.innerHTML = `<div class="fav-empty">No favourites yet.<br><br>Browse channels and tap the <strong>★</strong> on any channel tile to save it here.</div>`;
+    return;
+  }
+  // Group by country
+  const grouped = {};
+  for (const f of favs) {
+    if (!grouped[f.country]) grouped[f.country] = [];
+    grouped[f.country].push(f);
+  }
+  favContent.innerHTML = Object.keys(grouped).sort().map(country => `
+    <div class="fav-country-group">
+      <div class="fav-country-label">${escapeHtml(country)}</div>
+      ${grouped[country].map(f => `
+        <div class="fav-item" tabindex="0" data-country="${escapeHtml(f.country)}" data-name="${escapeHtml(f.name)}" role="button" aria-label="Play ${escapeHtml(f.name)}">
+          <div class="fav-logo">
+            ${f.logo ? `<img src="${escapeHtml(f.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=fav-init>${initials(f.name)}</span>'">` : `<span class="fav-init">${initials(f.name)}</span>`}
+          </div>
+          <span class="fav-name">${escapeHtml(f.name)}</span>
+          <button class="fav-remove" data-country="${escapeHtml(f.country)}" data-name="${escapeHtml(f.name)}" aria-label="Remove ${escapeHtml(f.name)} from favourites" tabindex="0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`).join('')}
+    </div>`).join('');
+
+  // Wire fav item clicks — find original channel and play it
+  favContent.querySelectorAll('.fav-item').forEach(el => {
+    const playFav = () => {
+      const country = el.getAttribute('data-country');
+      const name = el.getAttribute('data-name');
+      const channels = byCountry[country] || [];
+      const idx = channels.findIndex(ch => ch.name === name);
+      if (idx >= 0) { closeMenu(); playChannel(country, idx); }
+    };
+    el.addEventListener('click', (e) => { if (!e.target.closest('.fav-remove')) playFav(); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!e.target.closest('.fav-remove')) playFav(); } });
+  });
+
+  favContent.querySelectorAll('.fav-remove').forEach(btn => {
+    const remove = (e) => {
+      e.stopPropagation();
+      const country = btn.getAttribute('data-country');
+      const name = btn.getAttribute('data-name');
+      let favs = loadFavs();
+      favs = favs.filter(f => !(f.country === country && f.name === name));
+      saveFavs(favs);
+      renderFavDrawer();
+      // update star in grid if visible
+      document.querySelectorAll('.fav-star').forEach(star => {
+        if (star.getAttribute('data-country') === country && star.getAttribute('data-name') === name) {
+          star.classList.remove('active');
+          star.setAttribute('aria-pressed', 'false');
+        }
+      });
+    };
+    btn.addEventListener('click', remove);
+    btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); remove(e); } });
+  });
+}
 
 /* ---- Helpers ---- */
 function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
 function initials(name) {
   const w = name.trim().split(/\s+/).filter(Boolean);
-  if (!w.length) return "?";
+  if (!w.length) return '?';
   if (w.length === 1) return w[0].slice(0,2).toUpperCase();
   return (w[0][0] + w[1][0]).toUpperCase();
 }
-
 function parseM3U(text) {
-  const lines = text.split('\n');
-  const channels = [];
+  const lines = text.split('\n'), channels = [];
   let pending = null;
-  for (let raw of lines) {
+  for (const raw of lines) {
     const line = raw.trim();
     if (line.startsWith('#EXTINF')) {
-      const logoMatch  = line.match(/tvg-logo="([^"]*)"/);
-      const groupMatch = line.match(/group-title="([^"]*)"/);
-      const nameMatch  = line.match(/,(.*)$/);
       pending = {
-        logo: logoMatch ? logoMatch[1] : '',
-        country: groupMatch ? groupMatch[1] : 'Unsorted',
-        name: nameMatch ? nameMatch[1].trim() : 'Unnamed channel'
+        logo: (line.match(/tvg-logo="([^"]*)"/) || [])[1] || '',
+        country: (line.match(/group-title="([^"]*)"/) || [])[1] || 'Unsorted',
+        name: ((line.match(/,(.*)$/) || [])[1] || 'Unnamed').trim()
       };
     } else if (line && !line.startsWith('#') && pending) {
-      pending.url = line;
-      channels.push(pending);
-      pending = null;
+      pending.url = line; channels.push(pending); pending = null;
     }
   }
   return channels;
@@ -696,554 +668,470 @@ function parseM3U(text) {
 /* ---- Routing ---- */
 function navigateTo(viewName, params = {}) {
   currentView = viewName;
-  window.history.pushState({ view: viewName, ...params }, "");
+  window.history.pushState({ view: viewName, ...params }, '');
 }
-
-window.addEventListener('popstate', (event) => {
-  const state = event.state;
-  if (!state || state.view === "countries") {
-    showCountriesView(false);
-  } else if (state.view === "grid") {
-    openCountry(state.country, false);
-  } else if (state.view === "player") {
-    playChannel(state.country, state.channelIdx, false);
-  }
+window.addEventListener('popstate', event => {
+  const s = event.state;
+  if (!s || s.view === 'countries') showCountriesView(false);
+  else if (s.view === 'grid') openCountry(s.country, false);
+  else if (s.view === 'player') playChannel(s.country, s.channelIdx, false);
 });
 
-window.addEventListener('keydown', (e) => {
+/* ---- FIX 5: TV D-pad spatial focus management ---- */
+// All focusable elements in the app shell get TV-friendly focus
+const TV_FOCUSABLE = 'button[tabindex="0"], .country-row, .tile, .pin, .fav-item, input';
+let tvNavActive = false;
+
+window.addEventListener('keydown', e => {
+  // Detect if user is using D-pad/remote (arrow keys) vs mouse
+  if ([37,38,39,40].includes(e.keyCode)) tvNavActive = true;
+
+  // Global back handling
   const backKeys = [4, 8, 27];
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
     if (document.getElementById('player-overlay').classList.contains('active')) {
-      e.preventDefault();
-      closePlayer();
-    } else if (currentView === "grid") {
-      e.preventDefault();
-      window.history.back();
+      e.preventDefault(); closePlayer();
+    } else if (currentView === 'grid') {
+      e.preventDefault(); window.history.back();
+    } else if (menuDrawer.classList.contains('open')) {
+      e.preventDefault(); closeMenu();
     }
+    return;
   }
-  // D-pad OK/Enter on TV remotes triggers the focused element
+
+  // Player controls keyboard
+  if (document.getElementById('player-overlay').classList.contains('active')) {
+    showControls();
+    switch (e.keyCode) {
+      case 179: case 32: e.preventDefault(); video.paused ? video.play().catch(()=>{}) : video.pause(); break;
+      case 415: e.preventDefault(); video.play().catch(()=>{}); break;
+      case 19:  e.preventDefault(); video.pause(); break;
+      case 412: case 37: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime-10); } break;
+      case 417: case 39: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime+10); } break;
+      case 173: case 77: video.muted = !video.muted; muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG; break;
+    }
+    // D-pad navigation between player buttons when controls visible
+    if ([37,38,39,40].includes(e.keyCode) && controlsVisible) {
+      e.preventDefault();
+      const btns = [...document.querySelectorAll('#playerControls .ctrl-btn, #playerHeader .ctrl-btn')].filter(b => !b.closest('.hidden'));
+      const focused = document.activeElement;
+      const idx = btns.indexOf(focused);
+      if (e.keyCode === 39 || e.keyCode === 40) { // right / down
+        const next = btns[idx + 1] || btns[0];
+        next.focus();
+      } else { // left / up
+        const prev = btns[idx - 1] || btns[btns.length - 1];
+        prev.focus();
+      }
+    }
+    return;
+  }
+
+  // Enter / OK button fires focused element
   if (e.keyCode === 13 || e.key === 'Enter') {
     const focused = document.activeElement;
-    if (focused && focused !== document.body) focused.click();
+    if (focused && focused !== document.body) { e.preventDefault(); focused.click(); }
   }
 });
+
+window.addEventListener('mousemove', () => { tvNavActive = false; });
 
 /* ---- Load playlist ---- */
 async function loadPlaylist() {
   try {
-    const res = await fetch(M3U_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    const res = await fetch(M3U_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const channels = parseM3U(text);
-    if (channels.length === 0) throw new Error("Empty playlist");
-
+    if (!channels.length) throw new Error('Empty');
     byCountry = {};
     for (const ch of channels) {
-      const key = ch.country || "Unsorted";
+      const key = ch.country || 'Unsorted';
       if (!byCountry[key]) byCountry[key] = [];
       byCountry[key].push(ch);
     }
-    countryNames = Object.keys(byCountry).sort((a, b) => a.localeCompare(b));
-    freqLabel.textContent = countryNames.length + " COUNTRIES · " + channels.length + " SIGNALS";
-
-    window.history.replaceState({ view: "countries" }, "");
+    countryNames = Object.keys(byCountry).sort((a,b) => a.localeCompare(b));
+    freqLabel.textContent = countryNames.length + ' COUNTRIES · ' + channels.length + ' SIGNALS';
+    window.history.replaceState({ view: 'countries' }, '');
     showCountriesView(false);
   } catch (err) {
-    currentView = "error";
-    freqLabel.textContent = "NO SIGNAL";
-    mainEl.innerHTML = `
-      <div class="status">
-        <div style="color:var(--danger); font-size:32px; font-weight:bold;">⚠</div>
-        <div style="font-size: 16px;">Couldn't tune to the broadcast index.<br>Verify network configuration and source feed.</div>
-        <button onclick="location.reload()" tabindex="0" style="margin-top:20px; background:var(--surface); border:2px solid var(--line); color:var(--text); padding:12px 24px; border-radius:var(--radius); font-weight:700; cursor:pointer;">RESCAN BAND</button>
-      </div>`;
+    currentView = 'error';
+    freqLabel.textContent = 'NO SIGNAL';
+    mainEl.innerHTML = `<div class="status">
+      <div style="color:var(--danger);font-size:32px;font-weight:bold;">⚠</div>
+      <div>Couldn't tune to the broadcast index.<br>Check your connection.</div>
+      <button onclick="location.reload()" style="margin-top:20px;background:var(--surface);border:2px solid var(--line);color:var(--text);padding:12px 24px;border-radius:var(--radius);font-weight:700;cursor:pointer;">RESCAN BAND</button>
+    </div>`;
   }
 }
 
-function maxCount() {
-  return Math.max(...countryNames.map(c => byCountry[c].length), 1);
-}
+function maxCount() { return Math.max(...countryNames.map(c => byCountry[c].length), 1); }
 
 function barsHtml(count, max) {
-  const levels = 5;
-  const filled = Math.max(1, Math.round((count / max) * levels));
-  let html = '<div class="bars">';
-  for (let i = 0; i < levels; i++) {
-    const h = 4 + i * 2.5;
-    html += `<span class="${i < filled ? 'on' : ''}" style="height:${h}px;"></span>`;
-  }
-  return html + '</div>';
+  const levels = 5, filled = Math.max(1, Math.round((count/max)*levels));
+  let h = '<div class="bars">';
+  for (let i=0;i<levels;i++) h += `<span class="${i<filled?'on':''}" style="height:${4+i*2.5}px;"></span>`;
+  return h + '</div>';
 }
 
-function showCountriesView(shouldPushState = true) {
-  if (shouldPushState) navigateTo("countries");
-  currentView = "countries";
+function showCountriesView(push = true) {
+  if (push) navigateTo('countries');
+  currentView = 'countries';
   closePlayerOverlayOnly();
   searchInput.value = '';
-  searchInput.placeholder = 'Find a country or region…';
-  searchWrap.style.display = "flex";
+  searchInput.placeholder = 'Find a country…';
+  searchWrap.style.display = 'flex';
   renderCountries('');
 }
 
 function renderCountries(filter) {
-  const max = maxCount();
-  const filterLc = (filter || "").trim().toLowerCase();
-  const list = filterLc ? countryNames.filter(c => c.toLowerCase().includes(filterLc)) : countryNames;
-
-  let pinsHtml = "";
-  if (!filterLc) {
-    const validPins = PINS.filter(p => byCountry[p]);
-    if (validPins.length) {
-      pinsHtml = `
-        <div class="section-label">QUICK TUNE</div>
-        <div class="pins">
-          ${validPins.map(p => `<div class="pin" data-country="${escapeHtml(p)}" tabindex="0"><span class="dot"></span>${escapeHtml(p)}</div>`).join('')}
-        </div>`;
-    }
+  const max = maxCount(), lc = filter.trim().toLowerCase();
+  const list = lc ? countryNames.filter(c => c.toLowerCase().includes(lc)) : countryNames;
+  let pins = '';
+  if (!lc) {
+    const vp = PINS.filter(p => byCountry[p]);
+    if (vp.length) pins = `<div class="section-label">QUICK TUNE</div><div class="pins">${vp.map(p=>`<div class="pin" data-country="${escapeHtml(p)}" tabindex="0"><span class="dot"></span>${escapeHtml(p)}</div>`).join('')}</div>`;
   }
-
   const rows = list.map(c => {
     const n = byCountry[c].length;
-    return `
-      <div class="country-row" data-country="${escapeHtml(c)}" tabindex="0" role="button" aria-label="Open broadcasts for ${escapeHtml(c)}">
-        <span class="country-name">${escapeHtml(c)}</span>
-        <span class="country-meta">
-          ${barsHtml(n, max)}
-          <span class="count mono">${n} sig.</span>
-        </span>
-      </div>`;
-  }).join('');
-
-  mainEl.innerHTML = `
-    ${pinsHtml}
-    <div class="section-label">${filterLc ? 'MATCHES' : 'ALL COUNTRIES'}</div>
-    <div class="country-list">
-      ${rows || '<div class="empty">No transmission matches.</div>'}
+    return `<div class="country-row" data-country="${escapeHtml(c)}" tabindex="0" role="button" aria-label="${escapeHtml(c)}">
+      <span class="country-name">${escapeHtml(c)}</span>
+      <span class="country-meta">${barsHtml(n,max)}<span class="count mono">${n} sig.</span></span>
     </div>`;
-
-  const addTrigger = (el) => {
+  }).join('');
+  mainEl.innerHTML = `${pins}<div class="section-label">${lc?'MATCHES':'ALL COUNTRIES'}</div>
+    <div class="country-list">${rows||'<div class="empty">No matches found.</div>'}</div>`;
+  mainEl.querySelectorAll('.country-row, .pin').forEach(el => {
     const action = () => openCountry(el.getAttribute('data-country'));
     el.addEventListener('click', action);
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); action(); } });
-  };
-  mainEl.querySelectorAll('.country-row, .pin').forEach(addTrigger);
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();action();} });
+  });
 }
 
-function openCountry(country, shouldPushState = true) {
-  if (shouldPushState) navigateTo("grid", { country });
-  currentCountry = country;
-  currentView = "grid";
+function openCountry(country, push = true) {
+  if (push) navigateTo('grid', { country });
+  currentCountry = country; currentView = 'grid';
   closePlayerOverlayOnly();
-
-  // Switch search bar to channel-search mode
   searchInput.value = '';
   searchInput.placeholder = 'Search channels in ' + country + '…';
   searchWrap.style.display = 'flex';
-
-  const allChannels = byCountry[country] || [];
-
+  const all = byCountry[country] || [];
   mainEl.innerHTML = `
-    <button class="back-row" id="backToCountries" tabindex="0" aria-label="Back to countries">
-      <div class="icon-btn" style="border: 2px solid var(--line); display: inline-flex;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-        </svg>
+    <button class="back-row" id="backBtn" tabindex="0" aria-label="Back to countries">
+      <div class="icon-btn" style="border:2px solid var(--line);display:inline-flex;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       </div>
-      <div>
-        <div class="country-title">${escapeHtml(country)}</div>
-        <div class="country-sub mono" id="gridSub">${allChannels.length} broadcast signals online</div>
-      </div>
+      <div><div class="country-title">${escapeHtml(country)}</div><div class="country-sub mono" id="gridSub">${all.length} broadcast signals</div></div>
     </button>
     <div class="grid" id="channelGrid"></div>`;
-
+  const backBtn = document.getElementById('backBtn');
   const goBack = () => window.history.back();
-  const backBtn = document.getElementById('backToCountries');
   backBtn.addEventListener('click', goBack);
-  backBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBack(); } });
-
+  backBtn.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();goBack();} });
   renderGrid('');
 }
 
 function renderGrid(filter) {
-  const country = currentCountry;
-  const allChannels = byCountry[country] || [];
-  const filterLc = filter.trim().toLowerCase();
-  const channels = filterLc
-    ? allChannels.filter(ch => ch.name.toLowerCase().includes(filterLc))
-    : allChannels;
-
+  const all = byCountry[currentCountry] || [];
+  const lc = filter.trim().toLowerCase();
+  const chs = lc ? all.filter(ch => ch.name.toLowerCase().includes(lc)) : all;
   const grid = document.getElementById('channelGrid');
   const sub  = document.getElementById('gridSub');
   if (!grid) return;
-
-  if (sub) {
-    sub.textContent = filterLc
-      ? (channels.length ? channels.length + ' match' + (channels.length !== 1 ? 'es' : '') : 'No match')
-      : allChannels.length + ' broadcast signals online';
-  }
-
-  if (channels.length === 0) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      No channels match "<strong>${escapeHtml(filter)}</strong>" — try a different name.
-    </div>`;
+  if (sub) sub.textContent = lc ? (chs.length ? chs.length + ' match' + (chs.length!==1?'es':'') : 'No match') : all.length + ' broadcast signals';
+  if (!chs.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">No channels match "<strong>${escapeHtml(filter)}</strong>"</div>`;
     return;
   }
-
-  // Build tiles using original index so playChannel idx stays correct
-  const tiles = channels.map((ch) => {
-    const idx = allChannels.indexOf(ch);
+  grid.innerHTML = chs.map(ch => {
+    const idx = all.indexOf(ch);
+    const faved = isFav(currentCountry, ch.name);
     return `
-      <div class="tile" data-idx="${idx}" tabindex="0" role="button" aria-label="Tune into ${escapeHtml(ch.name)}">
+      <div class="tile" data-idx="${idx}" tabindex="0" role="button" aria-label="${escapeHtml(ch.name)}">
+        <button class="fav-star${faved?' active':''}" data-country="${escapeHtml(currentCountry)}" data-name="${escapeHtml(ch.name)}" aria-label="Favourite ${escapeHtml(ch.name)}" aria-pressed="${faved}" tabindex="0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${faved?'#FBBF24':'none'}" stroke="#FBBF24" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </button>
         <div class="logo-wrap">
-          ${ch.logo
-            ? `<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`
-            : `<span class="initials">${initials(ch.name)}</span>`}
+          ${ch.logo?`<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`:`<span class="initials">${initials(ch.name)}</span>`}
         </div>
         <div class="tile-name">${escapeHtml(ch.name)}</div>
       </div>`;
   }).join('');
 
-  grid.innerHTML = tiles;
-
   grid.querySelectorAll('.tile').forEach(el => {
     const idx = parseInt(el.getAttribute('data-idx'), 10);
-    const play = () => playChannel(country, idx);
+    const play = () => playChannel(currentCountry, idx);
     el.addEventListener('click', play);
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();play();} });
+  });
+
+  // Fav star — stop propagation so it doesn't trigger tile click
+  grid.querySelectorAll('.fav-star').forEach(star => {
+    const toggle = (e) => {
+      e.stopPropagation();
+      const country = star.getAttribute('data-country');
+      const name    = star.getAttribute('data-name');
+      const ch = (byCountry[country]||[]).find(c => c.name === name);
+      if (!ch) return;
+      toggleFav(ch, country);
+      const nowFaved = isFav(country, name);
+      star.classList.toggle('active', nowFaved);
+      star.setAttribute('aria-pressed', String(nowFaved));
+      star.querySelector('svg').setAttribute('fill', nowFaved ? '#FBBF24' : 'none');
+    };
+    star.addEventListener('click', toggle);
+    star.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(e);} });
   });
 }
 
-/* =====================================================
-   PLAYER — Custom controls, no native browser UI
-   ===================================================== */
-const overlay       = document.getElementById('player-overlay');
-const video         = document.getElementById('video');
-const playerState   = document.getElementById('playerState');
-const playerHeader  = document.getElementById('playerHeader');
-const playerCtrls   = document.getElementById('playerControls');
-const pname         = document.getElementById('pname');
-const pcountry      = document.getElementById('pcountry');
-const playPauseBtn  = document.getElementById('playPauseBtn');
-const ppIcon        = document.getElementById('ppIcon');
-const muteBtn       = document.getElementById('muteBtn');
-const muteIcon      = document.getElementById('muteIcon');
-const fsBtn         = document.getElementById('fsBtn');
-const fsIcon        = document.getElementById('fsIcon');
-const liveBadge     = document.getElementById('liveBadge');
-const progressWrap  = document.getElementById('progressWrap');
-const progressBar   = document.getElementById('progressBar');
-const timeLabel     = document.getElementById('timeLabel');
+/* FIX 2: Global channel search — searches ALL channels across all countries */
+function renderGlobalSearch(filter) {
+  const lc = filter.trim().toLowerCase();
+  if (!lc) { renderCountries(''); return; }
+  const results = [];
+  for (const country of countryNames) {
+    for (const ch of (byCountry[country]||[])) {
+      if (ch.name.toLowerCase().includes(lc)) results.push({ ch, country, idx: byCountry[country].indexOf(ch) });
+    }
+  }
+  if (!results.length) {
+    mainEl.innerHTML = `<div class="empty">No channels found matching "<strong>${escapeHtml(filter)}</strong>" across all countries.</div>`;
+    return;
+  }
+  // Group results by country for readability
+  const grouped = {};
+  for (const r of results) {
+    if (!grouped[r.country]) grouped[r.country] = [];
+    grouped[r.country].push(r);
+  }
+  let html = `<div class="section-label">${results.length} CHANNEL${results.length!==1?'S':''} MATCHING "${escapeHtml(filter.toUpperCase())}"</div>`;
+  for (const country of Object.keys(grouped).sort()) {
+    html += `<div class="section-label" style="margin-top:16px;">${escapeHtml(country)}</div><div class="grid" style="margin-bottom:20px;">`;
+    html += grouped[country].map(({ch, country: co, idx}) => {
+      const faved = isFav(co, ch.name);
+      return `<div class="tile" data-country="${escapeHtml(co)}" data-idx="${idx}" tabindex="0" role="button" aria-label="${escapeHtml(ch.name)}">
+        <button class="fav-star${faved?' active':''}" data-country="${escapeHtml(co)}" data-name="${escapeHtml(ch.name)}" aria-label="Favourite ${escapeHtml(ch.name)}" aria-pressed="${faved}" tabindex="0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${faved?'#FBBF24':'none'}" stroke="#FBBF24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <div class="logo-wrap">${ch.logo?`<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`:`<span class="initials">${initials(ch.name)}</span>`}</div>
+        <div class="tile-name">${escapeHtml(ch.name)}</div>
+      </div>`;
+    }).join('');
+    html += '</div>';
+  }
+  mainEl.innerHTML = html;
+  mainEl.querySelectorAll('.tile').forEach(el => {
+    const co  = el.getAttribute('data-country');
+    const idx = parseInt(el.getAttribute('data-idx'), 10);
+    const play = () => playChannel(co, idx);
+    el.addEventListener('click', play);
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();play();} });
+  });
+  mainEl.querySelectorAll('.fav-star').forEach(star => {
+    const toggle = (e) => {
+      e.stopPropagation();
+      const country = star.getAttribute('data-country');
+      const name = star.getAttribute('data-name');
+      const ch = (byCountry[country]||[]).find(c=>c.name===name);
+      if (!ch) return;
+      toggleFav(ch, country);
+      const nowFaved = isFav(country, name);
+      star.classList.toggle('active', nowFaved);
+      star.setAttribute('aria-pressed', String(nowFaved));
+      star.querySelector('svg').setAttribute('fill', nowFaved?'#FBBF24':'none');
+    };
+    star.addEventListener('click', toggle);
+    star.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(e);} });
+  });
+}
 
-let hls = null;
-let watchdog = null;
-let hideControlsTimer = null;
-let controlsVisible = true;
+searchInput.addEventListener('input', e => {
+  if (currentView === 'countries' || currentView === 'global-search') {
+    currentView = 'global-search';
+    renderGlobalSearch(e.target.value);
+  } else if (currentView === 'grid') {
+    renderGrid(e.target.value);
+  }
+});
 
-/* -- Control bar visibility -- */
+/* ---- PLAYER ---- */
+const overlay      = document.getElementById('player-overlay');
+const video        = document.getElementById('video');
+const playerState  = document.getElementById('playerState');
+const playerHeader = document.getElementById('playerHeader');
+const playerCtrls  = document.getElementById('playerControls');
+const pname        = document.getElementById('pname');
+const pcountry     = document.getElementById('pcountry');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const ppIcon       = document.getElementById('ppIcon');
+const muteBtn      = document.getElementById('muteBtn');
+const muteIcon     = document.getElementById('muteIcon');
+const fsBtn        = document.getElementById('fsBtn');
+const fsIcon       = document.getElementById('fsIcon');
+const fitModeBtn   = document.getElementById('fitModeBtn');
+const fitLabel     = document.getElementById('fitLabel');
+const liveBadge    = document.getElementById('liveBadge');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar  = document.getElementById('progressBar');
+const timeLabel    = document.getElementById('timeLabel');
+
+let hls = null, watchdog = null, hideControlsTimer = null, controlsVisible = true;
+
+/* FIX 6: Video fit mode cycles contain → cover → fill */
+const FIT_MODES = ['contain','cover','fill'];
+const FIT_LABELS = ['FIT','CROP','STRETCH'];
+let fitModeIdx = 0;
+
+fitModeBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  fitModeIdx = (fitModeIdx + 1) % FIT_MODES.length;
+  video.style.objectFit = FIT_MODES[fitModeIdx];
+  fitLabel.textContent = FIT_LABELS[fitModeIdx];
+  showControls();
+});
+
+/* Controls show/hide */
 function showControls() {
   playerHeader.classList.remove('hidden');
   playerCtrls.classList.remove('hidden');
   controlsVisible = true;
   scheduleHideControls();
 }
-
 function scheduleHideControls() {
   clearTimeout(hideControlsTimer);
-  if (!video.paused) {
-    hideControlsTimer = setTimeout(hideControls, 3500);
-  }
+  if (!video.paused) hideControlsTimer = setTimeout(hideControls, 3500);
 }
-
 function hideControls() {
   playerHeader.classList.add('hidden');
   playerCtrls.classList.add('hidden');
   controlsVisible = false;
 }
+function toggleControls() { controlsVisible ? hideControls() : showControls(); }
 
-function toggleControls() {
-  controlsVisible ? hideControls() : showControls();
-}
-
-// Tap/click anywhere on video toggles controls
 video.addEventListener('click', toggleControls);
-video.addEventListener('touchend', (e) => { e.preventDefault(); toggleControls(); });
-
-// Mouse move on desktop/TV browsers shows controls
+video.addEventListener('touchend', e => { e.preventDefault(); toggleControls(); });
 overlay.addEventListener('mousemove', showControls);
 
-/* -- Play / Pause -- */
+/* Play/Pause */
 function updatePlayIcon() {
-  if (video.paused) {
-    ppIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
-    clearTimeout(hideControlsTimer); // keep controls visible while paused
-  } else {
-    ppIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
-    scheduleHideControls();
-  }
+  if (video.paused) { ppIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`; clearTimeout(hideControlsTimer); }
+  else { ppIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`; scheduleHideControls(); }
 }
-
-playPauseBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (video.paused) { video.play().catch(() => {}); } else { video.pause(); }
-  showControls();
-});
-
-video.addEventListener('play',  updatePlayIcon);
+playPauseBtn.addEventListener('click', e => { e.stopPropagation(); video.paused ? video.play().catch(()=>{}) : video.pause(); showControls(); });
+video.addEventListener('play', updatePlayIcon);
 video.addEventListener('pause', updatePlayIcon);
 
-/* -- Mute -- */
-const UNMUTED_SVG = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
-const MUTED_SVG = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-  <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`;
+/* Mute */
+const UNMUTED_SVG = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
+const MUTED_SVG   = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`;
+muteBtn.addEventListener('click', e => { e.stopPropagation(); video.muted = !video.muted; muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG; showControls(); });
 
-muteBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  video.muted = !video.muted;
-  muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG;
-  showControls();
-});
-
-/* -- Progress / time -- */
-function isLiveStream() {
-  return !isFinite(video.duration) || video.duration === 0;
-}
-
+/* Progress */
+function isLiveStream() { return !isFinite(video.duration) || video.duration === 0; }
 function updateProgress() {
-  if (isLiveStream()) {
-    liveBadge.style.display = 'flex';
-    progressWrap.style.display = 'none';
-    timeLabel.textContent = '';
-  } else {
-    liveBadge.style.display = 'none';
-    progressWrap.style.display = 'block';
-    const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
-    progressBar.style.width = pct + '%';
-    timeLabel.textContent = fmt(video.currentTime);
+  if (isLiveStream()) { liveBadge.style.display='flex'; progressWrap.style.display='none'; timeLabel.textContent=''; }
+  else {
+    liveBadge.style.display='none'; progressWrap.style.display='block';
+    progressBar.style.width = (video.duration ? (video.currentTime/video.duration)*100 : 0) + '%';
+    const m=Math.floor(video.currentTime/60), s=Math.floor(video.currentTime%60);
+    timeLabel.textContent = m+':'+ String(s).padStart(2,'0');
   }
 }
-
-function fmt(s) {
-  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
-  return m + ':' + String(sec).padStart(2, '0');
-}
-
 video.addEventListener('timeupdate', updateProgress);
 video.addEventListener('durationchange', updateProgress);
-
-progressWrap.addEventListener('click', (e) => {
+progressWrap.addEventListener('click', e => {
   if (isLiveStream()) return;
   e.stopPropagation();
-  const rect = progressWrap.getBoundingClientRect();
-  const ratio = (e.clientX - rect.left) / rect.width;
-  video.currentTime = ratio * video.duration;
+  const r = progressWrap.getBoundingClientRect();
+  video.currentTime = ((e.clientX - r.left) / r.width) * video.duration;
   showControls();
 });
 
-/* -- Fullscreen -- */
+/* Fullscreen */
 function toggleFullscreen() {
   const el = document.getElementById('player-overlay');
   try {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement)
       (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen).call(el);
-    } else {
+    else
       (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
-    }
   } catch(e) {}
 }
-
-fsBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  toggleFullscreen();
-  showControls();
-});
-
+fsBtn.addEventListener('click', e => { e.stopPropagation(); toggleFullscreen(); showControls(); });
 document.addEventListener('fullscreenchange', updateFsIcon);
 document.addEventListener('webkitfullscreenchange', updateFsIcon);
-
 function updateFsIcon() {
   const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
   fsIcon.innerHTML = isFs
-    ? `<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
-       <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>`
-    : `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-       <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`;
+    ? `<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>`
+    : `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`;
 }
 
-/* -- D-pad keyboard controls for TV remotes -- */
-document.addEventListener('keydown', (e) => {
-  if (!overlay.classList.contains('active')) return;
+/* Player state */
+function setPlayerState(html, show) { playerState.innerHTML = html; playerState.className = show ? 'show' : ''; }
 
-  // Show controls on any key press during playback
-  showControls();
-
-  switch (e.keyCode) {
-    case 179: // MediaPlayPause
-    case 32:  // Space (some TV remotes)
-      e.preventDefault();
-      video.paused ? video.play().catch(()=>{}) : video.pause();
-      break;
-    case 415: // MediaPlay
-      e.preventDefault();
-      video.play().catch(() => {});
-      break;
-    case 19:  // MediaPause
-      e.preventDefault();
-      video.pause();
-      break;
-    case 412: // MediaRewind
-    case 37:  // Left arrow — rewind 10s
-      if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime - 10); }
-      break;
-    case 417: // MediaFastForward
-    case 39:  // Right arrow — forward 10s
-      if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime + 10); }
-      break;
-    case 173: // MediaMute
-    case 77:  // M key
-      video.muted = !video.muted;
-      muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG;
-      break;
-    case 27:  // Escape — handled above globally
-      break;
-  }
-});
-
-/* -- Player state messaging -- */
-function setPlayerState(html, show) {
-  playerState.innerHTML = html;
-  playerState.className = show ? 'show' : '';
-}
-
-/* -- Load & play a channel -- */
-function playChannel(country, idx, shouldPushState = true) {
+/* Play channel */
+function playChannel(country, idx, push = true) {
   const ch = byCountry[country]?.[idx];
   if (!ch) return;
-
-  if (shouldPushState) navigateTo("player", { country, channelIdx: idx });
-
-  currentCountry   = country;
-  currentChannelIdx = idx;
-
+  if (push) navigateTo('player', { country, channelIdx: idx });
+  currentCountry = country; currentChannelIdx = idx;
   overlay.classList.add('active');
-  pname.textContent    = ch.name;
-  pcountry.textContent = country;
-
-  setPlayerState(`
-    <div style="width:36px;height:36px;border-radius:50%;border:3px solid #333;border-top-color:#FF5A1F;animation:spin .8s linear infinite;"></div>
-    <div style="margin-top:10px;font-weight:600;">Locking Phase Signal…</div>
-  `, true);
-
-  showControls();
-  cleanupPlayer();
-
+  pname.textContent = ch.name; pcountry.textContent = country;
+  setPlayerState(`<div style="width:36px;height:36px;border-radius:50%;border:3px solid #333;border-top-color:#FF5A1F;animation:spin .8s linear infinite;"></div><div style="margin-top:10px;font-weight:600;">Locking Signal…</div>`, true);
+  showControls(); cleanupPlayer();
+  // Reset fit mode
+  fitModeIdx = 0; video.style.objectFit = 'contain'; fitLabel.textContent = 'FIT';
   watchdog = setTimeout(() => {
-    setPlayerState(`
-      <div style="color:#FB7185;font-weight:bold;font-size:16px;">Signal Timeout</div>
-      <div style="font-size:12px;margin-top:4px;">No active carrier wave detected.</div>
-      <button id="retryBtn">Retry</button>
-    `, true);
+    setPlayerState(`<div style="color:#FB7185;font-weight:bold;font-size:16px;">Signal Timeout</div><div style="font-size:12px;margin-top:4px;">No carrier detected.</div><button id="retryBtn">Retry</button>`, true);
     document.getElementById('retryBtn')?.addEventListener('click', () => playChannel(country, idx, false));
   }, 12000);
-
   video.addEventListener('playing', onPlaying, { once: true });
-  video.addEventListener('error',   onVideoError, { once: true });
-
+  video.addEventListener('error', onVideoError, { once: true });
   if (window.Hls && window.Hls.isSupported()) {
     hls = new Hls({ maxBufferLength: 30, manifestLoadingMaxRetry: 3, levelLoadingMaxRetry: 3 });
-    hls.loadSource(ch.url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) onVideoError(); });
-    video.play().catch(() => {});
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = ch.url;
-    video.play().catch(() => {});
-  } else {
-    video.src = ch.url;
-    video.play().catch(() => {});
-  }
+    hls.loadSource(ch.url); hls.attachMedia(video);
+    hls.on(Hls.Events.ERROR, (ev, data) => { if (data.fatal) onVideoError(); });
+    video.play().catch(()=>{});
+  } else { video.src = ch.url; video.play().catch(()=>{}); }
 }
-
-function onPlaying() {
-  clearTimeout(watchdog);
-  setPlayerState('', false);
-  updateProgress();
-  scheduleHideControls();
-}
-
+function onPlaying() { clearTimeout(watchdog); setPlayerState('', false); updateProgress(); scheduleHideControls(); }
 function onVideoError() {
   clearTimeout(watchdog);
-  setPlayerState(`
-    <div style="color:#FB7185;font-weight:bold;font-size:16px;">Loss of Carrier</div>
-    <div style="font-size:12px;margin-top:4px;">Cannot parse media feed.</div>
-    <button id="retryBtn2">Go Back</button>
-  `, true);
+  setPlayerState(`<div style="color:#FB7185;font-weight:bold;font-size:16px;">Loss of Carrier</div><div style="font-size:12px;margin-top:4px;">Cannot parse media feed.</div><button id="retryBtn2">Go Back</button>`, true);
   document.getElementById('retryBtn2')?.addEventListener('click', closePlayer);
 }
-
 function cleanupPlayer() {
   if (hls) { hls.destroy(); hls = null; }
-  video.removeAttribute('src');
-  video.load();
-  clearTimeout(watchdog);
-  clearTimeout(hideControlsTimer);
+  video.removeAttribute('src'); video.load();
+  clearTimeout(watchdog); clearTimeout(hideControlsTimer);
 }
-
 function closePlayerOverlayOnly() {
-  cleanupPlayer();
-  overlay.classList.remove('active');
-  setPlayerState('', false);
-  showControls(); // reset for next open
+  cleanupPlayer(); overlay.classList.remove('active'); setPlayerState('', false); showControls();
 }
+function closePlayer() { closePlayerOverlayOnly(); window.history.back(); }
 
-function closePlayer() {
-  closePlayerOverlayOnly();
-  window.history.back();
-}
+document.getElementById('closePlayer').addEventListener('click', e => { e.stopPropagation(); closePlayer(); });
 
-document.getElementById('closePlayer').addEventListener('click', (e) => {
-  e.stopPropagation();
-  closePlayer();
-});
-
-/* ---- Search ---- */
-searchInput.addEventListener('input', (e) => {
-  if (currentView === "countries") renderCountries(e.target.value);
-  else if (currentView === "grid") renderGrid(e.target.value);
-});
-
-/* ---- Boot ---- */
+/* Boot */
 initTheme();
 loadPlaylist();
 
-/* ---- PWA ---- */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
-}
+if ('serviceWorker' in navigator)
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 let deferredInstall = null;
 const installBtn = document.getElementById('installBtn');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstall = e;
-  if (installBtn) installBtn.style.display = 'flex';
-});
-
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; if (installBtn) installBtn.style.display = 'flex'; });
 if (installBtn) {
   installBtn.addEventListener('click', async () => {
     if (!deferredInstall) return;
-    deferredInstall.prompt();
-    await deferredInstall.userChoice;
-    deferredInstall = null;
-    installBtn.style.display = 'none';
+    deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; installBtn.style.display = 'none';
   });
 }
-
-window.addEventListener('appinstalled', () => {
-  if (installBtn) installBtn.style.display = 'none';
-});
+window.addEventListener('appinstalled', () => { if (installBtn) installBtn.style.display = 'none'; });
 </script>
 </body>
 </html>
