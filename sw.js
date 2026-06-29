@@ -1,4 +1,4 @@
-const CACHE_NAME = "relay-shell-v3";  // ✅ correct
+const CACHE_NAME = "relay-shell-v3.1";  // ✅ correct
 const SHELL_FILES = [
   "/Relay/index.html",
   "/Relay/manifest.json",
