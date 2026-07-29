@@ -142,8 +142,9 @@
   .search-bar svg { flex-shrink: 0; color: var(--muted); }
   .search-bar:focus-within { border-color: var(--focus-ring); }
 
-  /* Brand home button hover */
-  #homeBtn:hover h1 { color: var(--signal); }
+  /* Brand acts as refresh button */
+  #homeBtn:hover h1 { color: var(--tuned); }
+  #homeBtn:hover .mark { box-shadow: 0 0 0 5px rgba(13,148,136,0.25); }
   #homeBtn:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; border-radius: 4px; }
   #homeBtn h1 { transition: color 0.15s; }
 
@@ -346,7 +347,7 @@
 
   .ctrl-btn {
     background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25);
-    color: #fff; border-radius: 8px; width: 52px; height: 52px;
+    color: #fff; border-radius: 8px; width: 42px; height: 42px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; flex-shrink: 0;
     transition: background 0.15s, transform 0.1s, outline 0.1s;
@@ -366,7 +367,7 @@
   .ctrl-btn:active { transform: scale(0.92); }
 
   #playPauseBtn {
-    width: 68px; height: 68px; background: rgba(255,255,255,0.18);
+    width: 54px; height: 54px; background: rgba(255,255,255,0.18);
     border-radius: 50%; border: 3px solid rgba(255,255,255,0.4);
   }
 
@@ -389,12 +390,7 @@
   }
   #playerHeader.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
 
-  /* FIX 6: Fit mode pill */
-  #fitModeBtn {
-    /* slightly wider to show label */
-    width: auto; padding: 0 12px; gap: 6px; font-size: 11px; font-weight: 700;
-    letter-spacing: .06em; white-space: nowrap;
-  }
+  #playerFavBtn { flex-shrink: 0; }
 
   .icon-btn {
     background: none; border: none; color: inherit;
@@ -415,24 +411,49 @@
         <span class="freq mono" id="freqLabel">TUNING…</span>
       </div>
       <div class="header-actions">
-        <!-- Burger menu button → opens favourites drawer -->
-        <button class="icon-header-btn" id="refreshBtn" aria-label="Check for updates" tabindex="0">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-    <polyline points="23 4 23 10 17 10"/>
-    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-  </svg>
-</button>
-        <button class="icon-header-btn" id="menuBtn" aria-label="Favourites menu" tabindex="0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        <!-- Three-dot menu button -->
+        <button class="icon-header-btn" id="dotMenuBtn" aria-label="Menu" tabindex="0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
           </svg>
         </button>
-        <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle theme">
-          <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-          <span id="themeText">DARK</span>
-        </button>
+
+        <!-- Dropdown -->
+        <div id="dotDropdown" style="
+          display:none; position:absolute; top:52px; right:16px;
+          background:var(--bg); border:2px solid var(--line);
+          border-radius:var(--radius); z-index:200; min-width:180px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow:hidden;">
+          <button id="themeToggle" aria-label="Toggle theme" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
+            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span id="themeText">DARK MODE</span>
+          </button>
+          <button id="menuBtn" aria-label="Favourites" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
+            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span>Favourites</span>
+          </button>
+          <button id="exitBtn" aria-label="Exit app" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none;
+            color:var(--danger); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Exit</span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="dial"><div class="sweep"></div></div>
@@ -504,6 +525,11 @@
 
   <div id="playerControls">
     <div class="ctrl-bottom">
+      <button class="ctrl-btn" id="prevBtn" aria-label="Previous channel" tabindex="0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="4" x2="5" y2="20"/>
+        </svg>
+      </button>
       <button class="ctrl-btn" id="playPauseBtn" aria-label="Play or pause" tabindex="0">
         <svg id="ppIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
           <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
@@ -514,6 +540,11 @@
       <div class="progress-wrap" id="progressWrap" style="display:none;"><div id="progressBar"></div></div>
       <span class="time-label" id="timeLabel"></span>
 
+      <button class="ctrl-btn" id="nextBtn" aria-label="Next channel" tabindex="0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="4" x2="19" y2="20"/>
+        </svg>
+      </button>
       <button class="ctrl-btn" id="muteBtn" aria-label="Toggle mute" tabindex="0">
         <svg id="muteIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -522,10 +553,10 @@
         </svg>
       </button>
 
-      <!-- FIX 6: Fit mode cycle button -->
-      <button class="ctrl-btn" id="fitModeBtn" aria-label="Toggle fit mode" tabindex="0">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20"/></svg>
-        <span id="fitLabel">FIT</span>
+      <button class="ctrl-btn" id="playerFavBtn" aria-label="Bookmark channel" tabindex="0">
+        <svg id="playerFavIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
       </button>
 
       <button class="ctrl-btn" id="fsBtn" aria-label="Toggle fullscreen" tabindex="0">
@@ -555,6 +586,13 @@ function loadFavs() {
 function saveFavs(favs) {
   localStorage.setItem('relay_favs', JSON.stringify(favs));
 }
+/* ---- My Channels (custom streams) ---- */
+const MY_CHANNELS_KEY = 'relay_my_channels';
+const MY_COUNTRY = '⭐ My Channels';
+function loadMyChannels() { try { return JSON.parse(localStorage.getItem(MY_CHANNELS_KEY) || '[]'); } catch { return []; } }
+function saveMyChannels(chs) { localStorage.setItem(MY_CHANNELS_KEY, JSON.stringify(chs)); byCountry[MY_COUNTRY] = chs; }
+function initMyChannels() { byCountry[MY_COUNTRY] = loadMyChannels(); if (!countryNames.includes(MY_COUNTRY)) countryNames.unshift(MY_COUNTRY); }
+
 function isFav(country, name) {
   return loadFavs().some(f => f.country === country && f.name === name);
 }
@@ -600,14 +638,45 @@ function enableLightMode() {
 themeToggle.addEventListener('click', () => document.body.classList.contains('dark-theme') ? enableLightMode() : enableDarkMode());
 
 /* ---- RELAY logo → always goes home ---- */
-homeBtn.addEventListener('click', () => { if (currentView !== 'countries') showCountriesView(); });
-homeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (currentView !== 'countries') showCountriesView(); } });
+homeBtn.addEventListener('click', async () => {
+  if ('serviceWorker' in navigator) {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) { await reg.update(); reg.waiting?.postMessage({ type: 'SKIP_WAITING' }); }
+  }
+  location.reload(true);
+});
+homeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); location.reload(true); } });
 
 /* ---- FIX 4: Burger menu / Favourites drawer ---- */
 const menuDrawer  = document.getElementById('menuDrawer');
 const menuOverlay = document.getElementById('menuOverlay');
 const menuBtn     = document.getElementById('menuBtn');
 const menuClose   = document.getElementById('menuClose');
+const dotMenuBtn  = document.getElementById('dotMenuBtn');
+const dotDropdown = document.getElementById('dotDropdown');
+
+// Three-dot dropdown open/close
+dotMenuBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isOpen = dotDropdown.style.display === 'block';
+  dotDropdown.style.display = isOpen ? 'none' : 'block';
+});
+// Close dropdown when clicking anywhere outside
+document.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
+// Close dropdown when menu or theme is selected
+menuBtn.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
+themeToggle.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
+document.getElementById('exitBtn').addEventListener('click', () => {
+  dotDropdown.style.display = 'none';
+  // Try PWA/WebView close first, fallback to blank page
+  if (window.history.length > 1) {
+    window.close();
+    // If window.close() is blocked by browser, navigate away
+    setTimeout(() => { window.location.replace('about:blank'); }, 300);
+  } else {
+    window.close();
+  }
+});
 
 function openMenu() {
   renderFavDrawer();
@@ -734,8 +803,56 @@ window.addEventListener('popstate', event => {
 const TV_FOCUSABLE = 'button[tabindex="0"], .country-row, .tile, .pin, .fav-item, input';
 let tvNavActive = false;
 
+// All focusable selectors for spatial nav
+const FOCUSABLE = '.country-row, .tile, .pin, .fav-item, button[tabindex="0"], .back-row, #hideDeadBtn';
+
+function getFocusables() {
+  return [...document.querySelectorAll(FOCUSABLE)].filter(el => {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && !el.closest('#player-overlay');
+  });
+}
+
+function spatialNav(e) {
+  const all = getFocusables();
+  const focused = document.activeElement;
+  if (!all.length) return;
+
+  // If nothing focused yet, focus first element
+  if (!focused || !all.includes(focused)) {
+    all[0].focus(); return;
+  }
+
+  const fRect = focused.getBoundingClientRect();
+  const fCx = fRect.left + fRect.width / 2;
+  const fCy = fRect.top + fRect.height / 2;
+
+  let best = null, bestScore = Infinity;
+
+  for (const el of all) {
+    if (el === focused) continue;
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    const dx = cx - fCx;
+    const dy = cy - fCy;
+
+    // Check direction alignment
+    let primary, secondary;
+    if (e.keyCode === 38) { if (dy >= 0) continue; primary = -dy; secondary = Math.abs(dx); }      // UP
+    else if (e.keyCode === 40) { if (dy <= 0) continue; primary = dy; secondary = Math.abs(dx); }   // DOWN
+    else if (e.keyCode === 37) { if (dx >= 0) continue; primary = -dx; secondary = Math.abs(dy); }  // LEFT
+    else if (e.keyCode === 39) { if (dx <= 0) continue; primary = dx; secondary = Math.abs(dy); }   // RIGHT
+
+    // Score: prioritise elements in direction, penalise lateral offset
+    const score = primary + secondary * 2;
+    if (score < bestScore) { bestScore = score; best = el; }
+  }
+
+  if (best) { e.preventDefault(); best.focus(); best.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+
 window.addEventListener('keydown', e => {
-  // Detect if user is using D-pad/remote (arrow keys) vs mouse
   if ([37,38,39,40].includes(e.keyCode)) tvNavActive = true;
 
   // Global back handling
@@ -743,10 +860,12 @@ window.addEventListener('keydown', e => {
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
     if (document.getElementById('player-overlay').classList.contains('active')) {
       e.preventDefault(); closePlayer();
-    } else if (currentView === 'grid') {
-      e.preventDefault(); window.history.back();
     } else if (menuDrawer.classList.contains('open')) {
       e.preventDefault(); closeMenu();
+    } else if (currentView === 'grid') {
+      e.preventDefault(); window.history.back();
+    } else if (currentView === 'global-search') {
+      e.preventDefault(); showCountriesView();
     }
     return;
   }
@@ -758,33 +877,36 @@ window.addEventListener('keydown', e => {
       case 179: case 32: e.preventDefault(); video.paused ? video.play().catch(()=>{}) : video.pause(); break;
       case 415: e.preventDefault(); video.play().catch(()=>{}); break;
       case 19:  e.preventDefault(); video.pause(); break;
-      case 412: case 37: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime-10); } break;
-      case 417: case 39: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime+10); } break;
+      case 412: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime-10); } break;
+      case 417: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime+10); } break;
       case 173: case 77: video.muted = !video.muted; muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG; break;
     }
-    // D-pad navigation between player buttons when controls visible
+    // D-pad between player buttons
     if ([37,38,39,40].includes(e.keyCode) && controlsVisible) {
       e.preventDefault();
-      const btns = [...document.querySelectorAll('#playerControls .ctrl-btn, #playerHeader .ctrl-btn')].filter(b => !b.closest('.hidden'));
+      const btns = [...document.querySelectorAll('#playerControls .ctrl-btn, #playerHeader .ctrl-btn')].filter(b => !b.closest('[style*="visibility: hidden"]'));
       const focused = document.activeElement;
       const idx = btns.indexOf(focused);
-      if (e.keyCode === 39 || e.keyCode === 40) { // right / down
-        const next = btns[idx + 1] || btns[0];
-        next.focus();
-      } else { // left / up
-        const prev = btns[idx - 1] || btns[btns.length - 1];
-        prev.focus();
-      }
+      if (e.keyCode === 39 || e.keyCode === 40) { (btns[idx+1] || btns[0]).focus(); }
+      else { (btns[idx-1] || btns[btns.length-1]).focus(); }
     }
     return;
   }
 
-  // Enter / OK button fires focused element
+  // Spatial D-pad navigation in main UI
+  if ([37,38,39,40].includes(e.keyCode)) {
+    spatialNav(e);
+    return;
+  }
+
+  // Enter / OK fires focused element
   if (e.keyCode === 13 || e.key === 'Enter') {
     const focused = document.activeElement;
     if (focused && focused !== document.body) { e.preventDefault(); focused.click(); }
   }
 });
+
+window.addEventListener('mousemove', () => { tvNavActive = false; });
 
 window.addEventListener('mousemove', () => { tvNavActive = false; });
 
@@ -803,7 +925,8 @@ async function loadPlaylist() {
       byCountry[key].push(ch);
     }
     countryNames = Object.keys(byCountry).sort((a,b) => a.localeCompare(b));
-    freqLabel.textContent = countryNames.length + ' COUNTRIES · ' + channels.length + ' SIGNALS';
+    initMyChannels();
+    freqLabel.textContent = (countryNames.length - 1) + ' COUNTRIES · ' + channels.length + ' SIGNALS';
     window.history.replaceState({ view: 'countries' }, '');
     showCountriesView(false);
   } catch (err) {
@@ -832,8 +955,7 @@ function showCountriesView(push = true) {
   closePlayerOverlayOnly();
   homeSearches.style.display = 'flex';
   gridSearchWrap.style.display = 'none';
-  searchInput.value = '';
-  channelSearchInput.value = '';
+  // values preserved — user clears manually
   renderCountries('');
 }
 
@@ -868,28 +990,71 @@ function openCountry(country, push = true) {
   // hide home searches, show single grid channel search
   homeSearches.style.display = 'none';
   gridSearchWrap.style.display = 'flex';
-  gridSearchInput.value = '';
+  if (gridSearchInput.placeholder !== 'Search channels in ' + country + '…') {
+    gridSearchInput.value = '';
+  }
   gridSearchInput.placeholder = 'Search channels in ' + country + '…';
   const all = byCountry[country] || [];
   mainEl.innerHTML = `
-    <button class="back-row" id="backBtn" tabindex="0" aria-label="Back to countries">
-      <div class="icon-btn" style="border:2px solid var(--line);display:inline-flex;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      </div>
-      <div><div class="country-title">${escapeHtml(country)}</div><div class="country-sub mono" id="gridSub">${all.length} broadcast signals</div></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <!-- Back button + country name -->
+      <button class="back-row" id="backBtn" tabindex="0" aria-label="Back to countries" style="margin-bottom:0;flex-shrink:0;">
+        <div class="icon-btn" style="border:2px solid var(--line);display:inline-flex;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </div>
+        <div><div class="country-title">${escapeHtml(country)}</div><div class="country-sub mono" id="gridSub">${all.length} broadcast signals</div></div>
+      </button>
+
+      <!-- Spacer pushes icons to the right -->
+      <div style="flex:1;"></div>
+
+      <!-- Hide dead toggle: ⚠ + eye icon -->
+      <button id="hideDeadBtn" tabindex="0" aria-label="Toggle dead channels" style="background:none;border:2px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--muted);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+
+      <!-- Add channel + icon (My Channels only, injected by JS) -->
+      <div id="addChSlot"></div>
+    </div>
     </button>
     <div class="grid" id="channelGrid"></div>`;
+  let hideDead = false;
+  document.getElementById('hideDeadBtn')?.addEventListener('click', () => {
+    hideDead = !hideDead;
+    const eyeIcon = document.getElementById('eyeIcon');
+    const hideBtn = document.getElementById('hideDeadBtn');
+    hideBtn.style.borderColor = hideDead ? 'var(--signal)' : 'var(--line)';
+    // eye-off icon when hiding dead, eye-on when showing all
+    eyeIcon.innerHTML = hideDead
+      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    renderGrid(gridSearchInput.value, hideDead);
+  });
   const backBtn = document.getElementById('backBtn');
   const goBack = () => window.history.back();
   backBtn.addEventListener('click', goBack);
   backBtn.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();goBack();} });
+
+  // Inject + button into slot for My Channels only
+  if (country === MY_COUNTRY) {
+    const slot = document.getElementById('addChSlot');
+    if (slot) {
+      slot.innerHTML = `<button id="addChBtn" tabindex="0" aria-label="Add channel" style="background:var(--signal);border:none;border-radius:8px;padding:7px 11px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>`;
+      document.getElementById('addChBtn').addEventListener('click', () => showAddChannelModal());
+    }
+  }
+
   renderGrid('');
 }
 
-function renderGrid(filter) {
+function renderGrid(filter, hideDead = false) {
   const all = byCountry[currentCountry] || [];
   const lc = filter.trim().toLowerCase();
-  const chs = lc ? all.filter(ch => ch.name.toLowerCase().includes(lc)) : all;
+  let chs = lc ? all.filter(ch => ch.name.toLowerCase().includes(lc)) : all;
+  if (hideDead) chs = chs.filter(ch => !isDeadStream(ch.url));
   const grid = document.getElementById('channelGrid');
   const sub  = document.getElementById('gridSub');
   if (!grid) return;
@@ -912,6 +1077,8 @@ function renderGrid(filter) {
           ${ch.logo?`<img src="${escapeHtml(ch.logo)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=&quot;initials&quot;>${initials(ch.name)}</span>'">`:`<span class="initials">${initials(ch.name)}</span>`}
         </div>
         <div class="tile-name">${escapeHtml(ch.name)}</div>
+        ${isDeadStream(ch.url) ? `<span style="font-size:10px;color:var(--danger);font-weight:700;letter-spacing:.05em;">⚠ DEAD</span>` : ''}
+        ${isWorkingStream(ch.url) ? `<span style="font-size:10px;color:var(--tuned);font-weight:700;letter-spacing:.05em;">✓ WORKS</span>` : ''}
       </div>`;
   }).join('');
 
@@ -920,6 +1087,15 @@ function renderGrid(filter) {
     const play = () => playChannel(currentCountry, idx);
     el.addEventListener('click', play);
     el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();play();} });
+    // Pencil edit button for My Channels
+    if (currentCountry === MY_COUNTRY) {
+      const editBtn = document.createElement('button');
+      editBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+      editBtn.style.cssText = `position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:4px;cursor:pointer;color:#fff;display:flex;align-items:center;z-index:2;`;
+      editBtn.setAttribute('aria-label', 'Edit channel');
+      editBtn.addEventListener('click', e => { e.stopPropagation(); showAddChannelModal(all[idx]); });
+      el.appendChild(editBtn);
+    }
   });
 
   // Fav star — stop propagation so it doesn't trigger tile click
@@ -1023,7 +1199,10 @@ channelSearchInput.addEventListener('input', e => {
 
 // Bar 3 (grid/country view): filter channels within the open country
 gridSearchInput.addEventListener('input', e => {
-  if (currentView === 'grid') renderGrid(e.target.value);
+  if (currentView === 'grid') {
+    const hideDead = document.getElementById('hideDeadBtn')?.style.color === 'var(--signal)';
+    renderGrid(e.target.value, hideDead);
+  }
 });
 
 /* ---- PLAYER ---- */
@@ -1040,8 +1219,8 @@ const muteBtn      = document.getElementById('muteBtn');
 const muteIcon     = document.getElementById('muteIcon');
 const fsBtn        = document.getElementById('fsBtn');
 const fsIcon       = document.getElementById('fsIcon');
-const fitModeBtn   = document.getElementById('fitModeBtn');
-const fitLabel     = document.getElementById('fitLabel');
+const playerFavBtn = document.getElementById('playerFavBtn');
+const playerFavIcon = document.getElementById('playerFavIcon');
 const liveBadge    = document.getElementById('liveBadge');
 const progressWrap = document.getElementById('progressWrap');
 const progressBar  = document.getElementById('progressBar');
@@ -1049,18 +1228,39 @@ const timeLabel    = document.getElementById('timeLabel');
 
 let hls = null, watchdog = null, hideControlsTimer = null, controlsVisible = true;
 
-/* FIX 6: Video fit mode cycles contain → cover → fill */
-const FIT_MODES = ['contain','cover','fill'];
-const FIT_LABELS = ['FIT','CROP','STRETCH'];
-let fitModeIdx = 0;
+// video defaults to contain
 
-fitModeBtn.addEventListener('click', e => {
+document.getElementById('prevBtn').addEventListener('click', e => {
   e.stopPropagation();
-  fitModeIdx = (fitModeIdx + 1) % FIT_MODES.length;
-  video.style.objectFit = FIT_MODES[fitModeIdx];
-  fitLabel.textContent = FIT_LABELS[fitModeIdx];
+  const all = byCountry[currentCountry] || [];
+  const newIdx = (currentChannelIdx - 1 + all.length) % all.length;
+  playChannel(currentCountry, newIdx, false);
   showControls();
 });
+
+document.getElementById('nextBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const all = byCountry[currentCountry] || [];
+  const newIdx = (currentChannelIdx + 1) % all.length;
+  playChannel(currentCountry, newIdx, false);
+  showControls();
+});
+
+playerFavBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const ch = byCountry[currentCountry]?.[currentChannelIdx];
+  if (!ch) return;
+  toggleFav(ch, currentCountry);
+  updatePlayerFavIcon();
+  showControls();
+});
+
+function updatePlayerFavIcon() {
+  const ch = byCountry[currentCountry]?.[currentChannelIdx];
+  if (!ch) return;
+  const faved = isFav(currentCountry, ch.name);
+  playerFavIcon.setAttribute('fill', faved ? '#FBBF24' : 'none');
+}
 
 /* Controls show/hide */
 function showControls() {
@@ -1152,8 +1352,7 @@ function playChannel(country, idx, push = true) {
   pname.textContent = ch.name; pcountry.textContent = country;
   setPlayerState(`<div style="width:36px;height:36px;border-radius:50%;border:3px solid #333;border-top-color:#FF5A1F;animation:spin .8s linear infinite;"></div><div style="margin-top:10px;font-weight:600;">Locking Signal…</div>`, true);
   showControls(); cleanupPlayer();
-  // Reset fit mode
-  fitModeIdx = 0; video.style.objectFit = 'contain'; fitLabel.textContent = 'FIT';
+  video.style.objectFit = 'contain';
   watchdog = setTimeout(() => {
     setPlayerState(`<div style="color:#FB7185;font-weight:bold;font-size:16px;">Signal Timeout</div><div style="font-size:12px;margin-top:4px;">No carrier detected.</div><button id="retryBtn">Retry</button>`, true);
     document.getElementById('retryBtn')?.addEventListener('click', () => playChannel(country, idx, false));
@@ -1167,11 +1366,35 @@ function playChannel(country, idx, push = true) {
     video.play().catch(()=>{});
   } else { video.src = ch.url; video.play().catch(()=>{}); }
 }
-function onPlaying() { clearTimeout(watchdog); setPlayerState('', false); updateProgress(); scheduleHideControls(); }
+function getStreamStatus() { try { return JSON.parse(localStorage.getItem('relay_stream_status') || '{}'); } catch { return {}; } }
+function setStreamStatus(url, status) { const s = getStreamStatus(); s[url] = { status, ts: Date.now() }; localStorage.setItem('relay_stream_status', JSON.stringify(s)); }
+function isDeadStream(url) { const s = getStreamStatus()[url]; return s && s.status === 'dead'; }
+function isWorkingStream(url) { const s = getStreamStatus()[url]; return s && s.status === 'working'; }
+
+function onPlaying() { clearTimeout(watchdog); setPlayerState('', false); updateProgress(); scheduleHideControls(); updatePlayerFavIcon();
+  const ch = byCountry[currentCountry]?.[currentChannelIdx];
+  if (ch) setStreamStatus(ch.url, 'working');
+}
 function onVideoError() {
   clearTimeout(watchdog);
-  setPlayerState(`<div style="color:#FB7185;font-weight:bold;font-size:16px;">Loss of Carrier</div><div style="font-size:12px;margin-top:4px;">Cannot parse media feed.</div><button id="retryBtn2">Go Back</button>`, true);
+  const ch = byCountry[currentCountry]?.[currentChannelIdx];
+  if (ch) setStreamStatus(ch.url, 'dead');
+  const isExternal = ch && (ch.url.includes('youtube.com') || ch.url.includes('youtu.be') || !ch.url.match(/\.(m3u8|mpd|ts|mp4)$/i));
+  setPlayerState(`
+    <div style="color:#FB7185;font-weight:bold;font-size:16px;">Loss of Carrier</div>
+    <div style="font-size:12px;margin-top:4px;">Cannot parse media feed.</div>
+    ${isExternal ? `<button id="openBrowserBtn" style="background:var(--signal)!important;margin-top:4px;">Open in Browser</button>` : ''}
+    ${currentCountry === MY_COUNTRY ? `<button id="markWorkingBtn" style="background:#0D9488!important;margin-top:4px;">✓ Mark as Working</button>` : ''}
+    <button id="retryBtn2">Go Back</button>
+  `, true);
   document.getElementById('retryBtn2')?.addEventListener('click', closePlayer);
+  document.getElementById('openBrowserBtn')?.addEventListener('click', () => {
+    window.open(ch.url, '_blank');
+  });
+  document.getElementById('markWorkingBtn')?.addEventListener('click', () => {
+    if (ch) setStreamStatus(ch.url, 'working');
+    closePlayer();
+  });
 }
 function cleanupPlayer() {
   if (hls) { hls.destroy(); hls = null; }
@@ -1184,6 +1407,55 @@ function closePlayerOverlayOnly() {
 function closePlayer() { closePlayerOverlayOnly(); window.history.back(); }
 
 document.getElementById('closePlayer').addEventListener('click', e => { e.stopPropagation(); closePlayer(); });
+
+/* ---- Add Channel Modal ---- */
+function showAddChannelModal(existing = null) {
+  const isEdit = !!existing;
+  const modal = document.createElement('div');
+  modal.id = 'addChModal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;`;
+  modal.innerHTML = `
+    <div style="background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:28px 24px;width:100%;max-width:420px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:20px;">${isEdit ? 'Edit Channel' : '+ Add Channel'}</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <input id="mchName" placeholder="Channel name *" value="${isEdit ? escapeHtml(existing.name) : ''}" style="padding:10px 14px;border:2px solid var(--line);border-radius:999px;background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+        <input id="mchUrl" placeholder="Stream URL * (e.g. https://…/stream.m3u8)" value="${isEdit ? escapeHtml(existing.url) : ''}" style="padding:10px 14px;border:2px solid var(--line);border-radius:999px;background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+        <input id="mchLogo" placeholder="Logo URL (optional)" value="${isEdit ? escapeHtml(existing.logo||'') : ''}" style="padding:10px 14px;border:2px solid var(--line);border-radius:999px;background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button id="mchCancel" style="flex:1;padding:11px;border:2px solid var(--line);border-radius:999px;background:none;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+        ${isEdit ? `<button id="mchDelete" style="padding:11px 16px;border:2px solid var(--danger);border-radius:999px;background:none;color:var(--danger);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Delete</button>` : ''}
+        <button id="mchSave" style="flex:1;padding:11px;border:none;border-radius:999px;background:var(--signal);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">${isEdit ? 'Save' : 'Add'}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('mchName').focus();
+
+  document.getElementById('mchCancel').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  if (isEdit) {
+    document.getElementById('mchDelete').addEventListener('click', () => {
+      let chs = loadMyChannels().filter(c => c.url !== existing.url);
+      saveMyChannels(chs);
+      modal.remove();
+      openCountry(MY_COUNTRY, false);
+    });
+  }
+
+  document.getElementById('mchSave').addEventListener('click', () => {
+    const name = document.getElementById('mchName').value.trim();
+    const url  = document.getElementById('mchUrl').value.trim();
+    const logo = document.getElementById('mchLogo').value.trim();
+    if (!name || !url) { alert('Name and URL are required.'); return; }
+    let chs = loadMyChannels();
+    if (isEdit) { const i = chs.findIndex(c => c.url === existing.url); if (i >= 0) chs[i] = { name, url, logo, country: MY_COUNTRY }; }
+    else { chs.push({ name, url, logo, country: MY_COUNTRY }); }
+    saveMyChannels(chs);
+    modal.remove();
+    openCountry(MY_COUNTRY, false);
+  });
+}
 
 /* Boot */
 initTheme();
@@ -1201,16 +1473,7 @@ if (installBtn) {
     deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; installBtn.style.display = 'none';
   });
 }
-document.getElementById('refreshBtn').addEventListener('click', async () => {
-  if ('serviceWorker' in navigator) {
-    const reg = await navigator.serviceWorker.getRegistration();
-    if (reg) {
-      await reg.update();
-      reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-    }
-  }
-  location.reload(true);
-});
+// refresh handled by RELAY logo click
 window.addEventListener('appinstalled', () => { if (installBtn) installBtn.style.display = 'none'; });
 </script>
 </body>
