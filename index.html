@@ -908,17 +908,22 @@ const TV_FOCUSABLE = 'button[tabindex="0"], .country-row, .tile, .pin, .fav-item
 let tvNavActive = false;
 
 // All focusable selectors for spatial nav
-const FOCUSABLE = '.country-row, .tile, .pin, .fav-item, button[tabindex="0"], [tabindex="0"], .back-row';
+const FOCUSABLE = '.country-row, .tile, .pin, .fav-item, .back-row, #backBtn, #hideDeadBtn, #showHiddenBtn, #addChBtn, #dotMenuBtn, #homeBtn, #menuClose, #themeToggle, #menuBtn, #installBtn';
 
 function getFocusables() {
-  return [...document.querySelectorAll(FOCUSABLE)].filter(el => {
+  const all = [...document.querySelectorAll(FOCUSABLE)];
+  return all.filter(el => {
     const r = el.getBoundingClientRect();
     const style = window.getComputedStyle(el);
-    return r.width > 0 && r.height > 0
-      && style.display !== 'none'
-      && style.visibility !== 'hidden'
-      && !el.closest('#player-overlay')
-      && !el.closest('#menuDrawer');
+    if (r.width === 0 || r.height === 0) return false;
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    if (el.closest('#player-overlay')) return false;
+    if (el.closest('#menuDrawer')) return false;
+    // exclude sub-buttons that are INSIDE a tile or fav-item
+    // but keep the tile/fav-item itself
+    const parent = el.closest('.tile, .fav-item');
+    if (parent && parent !== el) return false;
+    return true;
   });
 }
 
@@ -1016,7 +1021,14 @@ window.addEventListener('keydown', e => {
   // Enter / OK fires focused element
   if (e.keyCode === 13 || e.key === 'Enter') {
     const focused = document.activeElement;
-    if (focused && focused !== document.body) { e.preventDefault(); focused.click(); }
+    if (!focused || focused === document.body) return;
+    e.preventDefault();
+    // If a tile is focused, click it directly to play
+    if (focused.classList.contains('tile')) {
+      focused.click();
+    } else {
+      focused.click();
+    }
   }
 });
 
