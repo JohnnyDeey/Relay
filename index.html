@@ -442,6 +442,29 @@
             </svg>
             <span>Favourites</span>
           </button>
+          <button id="exportBtn" aria-label="Export data" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
+            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Export Data</span>
+          </button>
+          <label id="importBtn" aria-label="Import data" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
+            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Import Data</span>
+            <input type="file" id="importFile" accept=".json" style="display:none;">
+          </label>
           <button id="exitBtn" aria-label="Exit app" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none;
@@ -666,6 +689,49 @@ document.addEventListener('click', () => { dotDropdown.style.display = 'none'; }
 // Close dropdown when menu or theme is selected
 menuBtn.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
 themeToggle.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
+// Export
+document.getElementById('exportBtn').addEventListener('click', () => {
+  dotDropdown.style.display = 'none';
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    relay_favs:           localStorage.getItem('relay_favs') || '[]',
+    relay_my_channels:    localStorage.getItem('relay_my_channels') || '[]',
+    relay_stream_status:  localStorage.getItem('relay_stream_status') || '{}',
+    relay_theme:          localStorage.getItem('relay_theme') || 'dark',
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `relay-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Import
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.version) throw new Error('Invalid file');
+      if (data.relay_favs)          localStorage.setItem('relay_favs', data.relay_favs);
+      if (data.relay_my_channels)   localStorage.setItem('relay_my_channels', data.relay_my_channels);
+      if (data.relay_stream_status) localStorage.setItem('relay_stream_status', data.relay_stream_status);
+      if (data.relay_theme)         localStorage.setItem('relay_theme', data.relay_theme);
+      alert('✅ Data imported successfully! Reloading…');
+      location.reload();
+    } catch {
+      alert('❌ Invalid backup file. Please use a RELAY export file.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // reset so same file can be imported again
+});
+
 document.getElementById('exitBtn').addEventListener('click', () => {
   dotDropdown.style.display = 'none';
   // Try PWA/WebView close first, fallback to blank page
