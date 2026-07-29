@@ -442,29 +442,7 @@
             </svg>
             <span>Favourites</span>
           </button>
-          <button id="exportBtn" aria-label="Export data" style="
-            width:100%; display:flex; align-items:center; gap:12px;
-            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
-            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Export Data</span>
-          </button>
-          <button id="importBtn" aria-label="Import data" style="
-            width:100%; display:flex; align-items:center; gap:12px;
-            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
-            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span>Import Data</span>
-          </button>
-          <input type="file" id="importFile" accept=".json" style="display:none;">
+          
           <button id="exitBtn" aria-label="Exit app" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none;
@@ -744,94 +722,10 @@ document.addEventListener('click', () => { dotDropdown.style.display = 'none'; }
 // Close dropdown when menu or theme is selected
 menuBtn.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
 themeToggle.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
-// Export
-document.getElementById('exportBtn').addEventListener('click', () => {
-  dotDropdown.style.display = 'none';
-  const data = {
-    version: 1,
-    exported: new Date().toISOString(),
-    relay_favs:           localStorage.getItem('relay_favs') || '[]',
-    relay_my_channels:    localStorage.getItem('relay_my_channels') || '[]',
-    relay_stream_status:  localStorage.getItem('relay_stream_status') || '{}',
-    relay_hidden:         localStorage.getItem('relay_hidden') || '{}',
-    relay_theme:          localStorage.getItem('relay_theme') || 'dark',
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `relay-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
+// Export and Import removed
 
 // Import
-function processImportData(text) {
-  try {
-    const data = JSON.parse(text);
-    if (!data.version) throw new Error('Invalid');
-    if (data.relay_favs)          localStorage.setItem('relay_favs', data.relay_favs);
-    if (data.relay_my_channels)   localStorage.setItem('relay_my_channels', data.relay_my_channels);
-    if (data.relay_stream_status) localStorage.setItem('relay_stream_status', data.relay_stream_status);
-    if (data.relay_hidden)        localStorage.setItem('relay_hidden', data.relay_hidden);
-    if (data.relay_theme)         localStorage.setItem('relay_theme', data.relay_theme);
-    alert('✅ Data imported successfully! Reloading…');
-    location.reload();
-  } catch {
-    alert('❌ Invalid data. Please use a RELAY export file.');
-  }
-}
-
-function isTVDevice() {
-  return /Android/i.test(navigator.userAgent) && !/Mobile/i.test(navigator.userAgent)
-    || /TV|SmartTV|WebOS|Tizen|SMART-TV/i.test(navigator.userAgent)
-    || window.innerWidth >= 1280 && !('ontouchstart' in window) && /Android/i.test(navigator.userAgent);
-}
-
-document.getElementById('importBtn').addEventListener('click', () => {
-  dotDropdown.style.display = 'none';
-
-  if (isTVDevice()) {
-    // TV — show paste modal instead of file picker
-    const modal = document.createElement('div');
-    modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;`;
-    modal.innerHTML = `
-      <div style="background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:24px;width:100%;max-width:500px;">
-        <div style="font-size:15px;font-weight:700;margin-bottom:12px;">📋 Paste your RELAY backup</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Open your relay-backup.json file in a text editor, copy all the text, then paste it below.</div>
-        <textarea id="importPasteArea" rows="8" style="width:100%;padding:10px;background:var(--surface);border:2px solid var(--line);border-radius:8px;color:var(--text);font-size:12px;font-family:monospace;resize:none;" placeholder='Paste JSON here…'></textarea>
-        <div style="display:flex;gap:10px;margin-top:16px;">
-          <button id="importPasteCancel" style="flex:1;padding:11px;border:2px solid var(--line);border-radius:999px;background:none;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
-          <button id="importPasteOk" style="flex:1;padding:11px;border:none;border-radius:999px;background:var(--signal);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Import</button>
-        </div>
-      </div>`;
-    document.body.appendChild(modal);
-    setTimeout(() => {
-      const area = document.getElementById('importPasteArea');
-      area.removeAttribute('readonly');
-      area.focus();
-    }, 100);
-    document.getElementById('importPasteCancel').addEventListener('click', () => modal.remove());
-    document.getElementById('importPasteOk').addEventListener('click', () => {
-      const text = document.getElementById('importPasteArea').value.trim();
-      if (!text) { alert('Please paste your backup data first.'); return; }
-      modal.remove();
-      processImportData(text);
-    });
-  } else {
-    // Phone/laptop — use normal file picker
-    document.getElementById('importFile').click();
-  }
-});
-
-document.getElementById('importFile').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => processImportData(ev.target.result);
-  reader.readAsText(file);
-  e.target.value = '';
-});
+// Export and Import removed
 
 document.getElementById('exitBtn').addEventListener('click', () => {
   dotDropdown.style.display = 'none';
@@ -1078,7 +972,7 @@ window.addEventListener('keydown', e => {
   // Global back handling — layered, never exits app
   const backKeys = [4, 27];
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
-    e.preventDefault();
+    e.preventDefault(); // always prevent default — stops browser from exiting
 
     // Layer 1 — close player if open
     if (document.getElementById('player-overlay').classList.contains('active')) {
@@ -1095,15 +989,14 @@ window.addEventListener('keydown', e => {
 
     // Layer 4 — go back from grid to countries
     } else if (currentView === 'grid') {
-      window.history.back();
+      showCountriesView();  // use showCountriesView instead of history.back()
 
     // Layer 5 — go back from global search to countries
     } else if (currentView === 'global-search') {
       showCountriesView();
 
-    // Layer 6 — already on home, do nothing — never exit
+    // Layer 6 — already on home — do absolutely nothing, never exit
     } else {
-      // Stay on home, just refocus first element
       const all = getFocusables();
       if (all.length) all[0].focus();
     }
