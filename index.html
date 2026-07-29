@@ -716,9 +716,20 @@ dotMenuBtn.addEventListener('click', (e) => {
 dotDropdown.addEventListener('keydown', e => {
   const items = [...dotDropdown.querySelectorAll('button, label')];
   const idx = items.indexOf(document.activeElement);
-  if (e.keyCode === 40) { e.preventDefault(); (items[idx+1] || items[0]).focus(); }
-  if (e.keyCode === 38) { e.preventDefault(); (items[idx-1] || items[items.length-1]).focus(); }
-  if (e.keyCode === 27) { dotDropdown.style.display = 'none'; dotMenuBtn.focus(); }
+  if (e.keyCode === 40 || e.keyCode === 39) { // down or right
+    e.preventDefault();
+    (items[idx + 1] || items[0]).focus();
+  }
+  if (e.keyCode === 38 || e.keyCode === 37) { // up or left
+    e.preventDefault();
+    (items[idx - 1] || items[items.length - 1]).focus();
+  }
+  if (e.keyCode === 27 || e.keyCode === 8) { // escape or back
+    e.preventDefault();
+    dotDropdown.style.display = 'none';
+    dotMenuBtn.focus();
+  }
+  e.stopPropagation(); // prevent spatialNav from also firing
 });
 // Close dropdown when clicking anywhere outside
 document.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
@@ -908,40 +919,51 @@ const TV_FOCUSABLE = 'button[tabindex="0"], .country-row, .tile, .pin, .fav-item
 let tvNavActive = false;
 
 // All focusable selectors for spatial nav
-const FOCUSABLE = '.country-row, .tile, .pin, .fav-item, .back-row, #backBtn, #hideDeadBtn, #showHiddenBtn, #addChBtn, #dotMenuBtn, #homeBtn, #menuClose, #themeToggle, #menuBtn, #installBtn';
-
+// Returns all visible focusable elements excluding sub-buttons inside tiles
 function getFocusables() {
-  const all = [...document.querySelectorAll(FOCUSABLE)];
+  // Always include these specific elements
+  const specific = [
+    '#homeBtn', '#dotMenuBtn', '#searchInput', '#channelSearchInput',
+    '#gridSearchInput', '#backBtn', '#hideDeadBtn', '#showHiddenBtn', '#addChBtn'
+  ].map(s => document.querySelector(s)).filter(Boolean);
+
+  // Dynamic elements rendered into main
+  const dynamic = [...document.querySelectorAll(
+    '#main .country-row, #main .tile, #main .pin, #main .fav-item'
+  )];
+
+  const all = [...specific, ...dynamic];
+
   return all.filter(el => {
     const r = el.getBoundingClientRect();
     const style = window.getComputedStyle(el);
-    if (r.width === 0 || r.height === 0) return false;
-    if (style.display === 'none' || style.visibility === 'hidden') return false;
-    if (el.closest('#player-overlay')) return false;
-    if (el.closest('#menuDrawer')) return false;
-    // exclude sub-buttons that are INSIDE a tile or fav-item
-    // but keep the tile/fav-item itself
-    const parent = el.closest('.tile, .fav-item');
-    if (parent && parent !== el) return false;
-    return true;
+    return r.width > 0 && r.height > 0
+      && style.display !== 'none'
+      && style.visibility !== 'hidden'
+      && style.opacity !== '0';
   });
 }
 
-function spatialNav(e) {
+function spatialNav(dir) {
+  // dir: 'up' | 'down' | 'left' | 'right'
   const all = getFocusables();
-  const focused = document.activeElement;
-  if (!all.length) return;
+  if (!all.length) { all[0]?.focus(); return; }
 
-  // If nothing focused yet, focus first element
+  const focused = document.activeElement;
+
+  // Nothing focused — focus first item
   if (!focused || !all.includes(focused)) {
-    all[0].focus(); return;
+    all[0].focus();
+    all[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
   }
 
-  const fRect = focused.getBoundingClientRect();
-  const fCx = fRect.left + fRect.width / 2;
-  const fCy = fRect.top + fRect.height / 2;
+  const fr = focused.getBoundingClientRect();
+  const fCx = fr.left + fr.width / 2;
+  const fCy = fr.top + fr.height / 2;
 
-  let best = null, bestScore = Infinity;
+  let best = null;
+  let bestScore = Infinity;
 
   for (const el of all) {
     if (el === focused) continue;
@@ -951,19 +973,28 @@ function spatialNav(e) {
     const dx = cx - fCx;
     const dy = cy - fCy;
 
-    // Check direction alignment
-    let primary, secondary;
-    if (e.keyCode === 38) { if (dy >= 0) continue; primary = -dy; secondary = Math.abs(dx); }      // UP
-    else if (e.keyCode === 40) { if (dy <= 0) continue; primary = dy; secondary = Math.abs(dx); }   // DOWN
-    else if (e.keyCode === 37) { if (dx >= 0) continue; primary = -dx; secondary = Math.abs(dy); }  // LEFT
-    else if (e.keyCode === 39) { if (dx <= 0) continue; primary = dx; secondary = Math.abs(dy); }   // RIGHT
+    let inDirection = false;
+    let primary = 0;
+    let secondary = 0;
 
-    // Score: prioritise elements in direction, penalise lateral offset
-    const score = primary + secondary * 2;
+    if (dir === 'up')    { inDirection = dy < -5;  primary = -dy; secondary = Math.abs(dx); }
+    if (dir === 'down')  { inDirection = dy > 5;   primary = dy;  secondary = Math.abs(dx); }
+    if (dir === 'left')  { inDirection = dx < -5;  primary = -dx; secondary = Math.abs(dy); }
+    if (dir === 'right') { inDirection = dx > 5;   primary = dx;  secondary = Math.abs(dy); }
+
+    if (!inDirection) continue;
+
+    // Heavily penalise elements that are mostly off-axis
+    // For left/right: penalise if vertical offset is more than half the height
+    // For up/down: penalise if horizontal offset is more than 2 column widths
+    const score = primary + secondary * 3;
     if (score < bestScore) { bestScore = score; best = el; }
   }
 
-  if (best) { e.preventDefault(); best.focus(); best.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  if (best) {
+    best.focus();
+    best.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
 }
 
 window.addEventListener('keydown', e => {
@@ -1009,12 +1040,9 @@ window.addEventListener('keydown', e => {
 
   // Spatial D-pad navigation in main UI
   if ([37,38,39,40].includes(e.keyCode)) {
-    // If nothing is focused yet, focus the first focusable element
-    if (!document.activeElement || document.activeElement === document.body) {
-      const all = getFocusables();
-      if (all.length) { all[0].focus(); e.preventDefault(); return; }
-    }
-    spatialNav(e);
+    e.preventDefault();
+    const dirMap = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+    spatialNav(dirMap[e.keyCode]);
     return;
   }
 
