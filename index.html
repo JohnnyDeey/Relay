@@ -1000,46 +1000,70 @@ function spatialNav(dir) {
 window.addEventListener('keydown', e => {
   if ([37,38,39,40].includes(e.keyCode)) tvNavActive = true;
 
-  // Global back handling
+  // Global back handling — never exits app
   const backKeys = [4, 8, 27];
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
+    e.preventDefault();
     if (document.getElementById('player-overlay').classList.contains('active')) {
-      e.preventDefault(); closePlayer();
+      closePlayer();
+    } else if (dotDropdown.style.display === 'block') {
+      dotDropdown.style.display = 'none';
+      dotMenuBtn.focus();
     } else if (menuDrawer.classList.contains('open')) {
-      e.preventDefault(); closeMenu();
+      closeMenu();
     } else if (currentView === 'grid') {
-      e.preventDefault(); window.history.back();
+      showCountriesView();
     } else if (currentView === 'global-search') {
-      e.preventDefault(); showCountriesView();
+      showCountriesView();
+    } else {
+      // Already on home — do nothing, never exit
+      const all = getFocusables();
+      if (all.length) all[0].focus();
     }
     return;
   }
 
-  // Player controls keyboard
+  // Player controls keyboard — strictly for video page only
   if (document.getElementById('player-overlay').classList.contains('active')) {
-    showControls();
+
+    // Media keys always work regardless
     switch (e.keyCode) {
       case 179: case 32: e.preventDefault(); video.paused ? video.play().catch(()=>{}) : video.pause(); break;
       case 415: e.preventDefault(); video.play().catch(()=>{}); break;
       case 19:  e.preventDefault(); video.pause(); break;
-      case 412: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime-10); } break;
-      case 417: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime+10); } break;
       case 173: case 77: video.muted = !video.muted; muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG; break;
     }
-    // D-pad between player buttons
-    if ([37,38,39,40].includes(e.keyCode) && controlsVisible) {
+
+    // Arrow keys in player — ONLY move virtual cursor, never show controls
+    if ([37,38,39,40].includes(e.keyCode)) {
       e.preventDefault();
-      const btns = [...document.querySelectorAll('#playerControls .ctrl-btn, #playerHeader .ctrl-btn')].filter(b => !b.closest('[style*="visibility: hidden"]'));
-      const focused = document.activeElement;
-      const idx = btns.indexOf(focused);
-      if (e.keyCode === 39 || e.keyCode === 40) { (btns[idx+1] || btns[0]).focus(); }
-      else { (btns[idx-1] || btns[btns.length-1]).focus(); }
+      // Let virtual cursor handle it — do NOT call showControls()
+      return;
     }
+
+    // OK/Enter in player:
+    // — if controls visible → navigate/click focused control button
+    // — if controls hidden → show controls
+    if (e.keyCode === 13 || e.key === 'Enter') {
+      e.preventDefault();
+      if (controlsVisible) {
+        const focused = document.activeElement;
+        if (focused && focused !== document.body) {
+          focused.click();
+        }
+      } else {
+        showControls();
+      }
+      return;
+    }
+
     return;
   }
 
-  // Spatial D-pad navigation in main UI
+  // Spatial D-pad navigation in main UI — only on first press, not repeat
   if ([37,38,39,40].includes(e.keyCode)) {
+    if (e.repeat) return; // block keyboard repeat — only fire once per press
+    if (vVisible) return; // cursor is active — let it handle movement
     e.preventDefault();
     const dirMap = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
     spatialNav(dirMap[e.keyCode]);
@@ -1061,6 +1085,95 @@ window.addEventListener('keydown', e => {
 });
 
 window.addEventListener('mousemove', () => { tvNavActive = false; });
+
+/* ---- Virtual cursor activated by holding arrow keys ---- */
+const vCursor = document.createElement('div');
+vCursor.style.cssText = `position:fixed;width:36px;height:36px;z-index:9999;pointer-events:none;display:none;`;
+vCursor.innerHTML = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="1.5"><path d="M4 2l16 10-7 1-4 7z"/></svg>`;
+document.body.appendChild(vCursor);
+
+let vX = window.innerWidth/2, vY = window.innerHeight/2;
+let vVisible = false;
+let vHoldTimer = null, vMoveInterval = null;
+const V_SPEED = 4, V_DELAY = 500; // reduced speed from 10 to 4
+const vDirs = { 37:[-V_SPEED,0], 38:[0,-V_SPEED], 39:[V_SPEED,0], 40:[0,V_SPEED] };
+const vKeys = {};
+
+function vShow() {
+  vCursor.style.display = 'block';
+  vCursor.style.left = vX + 'px';
+  vCursor.style.top  = vY + 'px';
+  vVisible = true;
+}
+function vHide() {
+  vCursor.style.display = 'none';
+  vVisible = false;
+  clearTimeout(vHoldTimer); vHoldTimer = null;
+  clearInterval(vMoveInterval); vMoveInterval = null;
+}
+function vMove(dx, dy) {
+  vX = Math.max(0, Math.min(window.innerWidth-20,  vX+dx));
+  vY = Math.max(0, Math.min(window.innerHeight-20, vY+dy));
+  vCursor.style.left = vX+'px';
+  vCursor.style.top  = vY+'px';
+}
+function vClick() {
+  vCursor.style.display = 'none';
+  const el = document.elementFromPoint(vX, vY);
+  vCursor.style.display = 'block';
+  if (el) { el.click(); if (el.tabIndex >= 0) el.focus(); }
+}
+
+window.addEventListener('keydown', e => {
+  if (![37,38,39,40].includes(e.keyCode)) return;
+  if (vKeys[e.keyCode]) return;
+  vKeys[e.keyCode] = true;
+
+  if (!vHoldTimer) {
+    vHoldTimer = setTimeout(() => {
+      // place cursor at focused element if not visible yet
+      if (!vVisible) {
+        const f = document.activeElement;
+        if (f && f !== document.body) {
+          const r = f.getBoundingClientRect();
+          vX = r.left + r.width/2;
+          vY = r.top  + r.height/2;
+        }
+        vShow();
+      }
+      vMoveInterval = setInterval(() => {
+        let dx=0, dy=0;
+        for (const k of Object.keys(vKeys)) {
+          const d = vDirs[k];
+          if (d) { dx+=d[0]; dy+=d[1]; }
+        }
+        vMove(dx, dy);
+      }, 16);
+    }, V_DELAY);
+  }
+}, true);
+
+window.addEventListener('keyup', e => {
+  if (![37,38,39,40].includes(e.keyCode)) return;
+  delete vKeys[e.keyCode];
+  if (Object.keys(vKeys).length === 0) {
+    // Stop moving but KEEP cursor visible so user can press OK
+    clearTimeout(vHoldTimer); vHoldTimer = null;
+    clearInterval(vMoveInterval); vMoveInterval = null;
+    // do NOT call vHide() here
+  }
+}, true);
+
+window.addEventListener('keydown', e => {
+  if (!vVisible) return;
+  if (e.keyCode === 13 || e.key === 'Enter') {
+    e.preventDefault(); e.stopPropagation();
+    vClick(); vHide();
+  }
+  if (![37,38,39,40,13].includes(e.keyCode)) vHide();
+});
+
+window.addEventListener('mousemove', () => { if (vVisible) vHide(); });
 
 window.addEventListener('mousemove', () => { tvNavActive = false; });
 
