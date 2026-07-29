@@ -420,10 +420,10 @@
 
         <!-- Dropdown -->
         <div id="dotDropdown" style="
-          display:none; position:fixed; top:60px; right:16px;
+          display:none; position:absolute; top:52px; right:16px;
           background:var(--bg); border:2px solid var(--line);
-          border-radius:var(--radius); z-index:999; min-width:200px;
-          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow-y:auto; max-height:80vh;" role="menu">
+          border-radius:var(--radius); z-index:200; min-width:180px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow:hidden;" role="menu">
           <button id="themeToggle" aria-label="Toggle theme" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
@@ -442,7 +442,29 @@
             </svg>
             <span>Favourites</span>
           </button>
-          
+          <button id="exportBtn" aria-label="Export data" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
+            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Export Data</span>
+          </button>
+          <label id="importBtn" aria-label="Import data" style="
+            width:100%; display:flex; align-items:center; gap:12px;
+            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
+            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Import Data</span>
+            <input type="file" id="importFile" accept=".json" style="display:none;">
+          </label>
           <button id="exitBtn" aria-label="Exit app" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none;
@@ -464,12 +486,12 @@
       <!-- Search bar 1: filter by country name -->
       <div class="search-bar" id="searchWrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false" readonly>
+        <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false">
       </div>
       <!-- Search bar 2: search any channel by keyword across all countries -->
       <div class="search-bar" id="channelSearchWrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="channelSearchInput" type="text" placeholder="Search any channel, e.g. "action movies"…" autocomplete="off" spellcheck="false" readonly>
+        <input id="channelSearchInput" type="text" placeholder="Search any channel, e.g. "action movies"…" autocomplete="off" spellcheck="false">
       </div>
     </div>
 
@@ -481,7 +503,7 @@
     <!-- GRID view: single channel search, shown only inside a country -->
     <div class="search-bar" id="gridSearchWrap" style="display:none;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="gridSearchInput" type="text" placeholder="Search channels…" autocomplete="off" spellcheck="false" readonly>
+      <input id="gridSearchInput" type="text" placeholder="Search channels…" autocomplete="off" spellcheck="false">
     </div>
   </header>
 
@@ -578,10 +600,7 @@
 
 <script>
 const M3U_URL = "https://iptv-org.github.io/iptv/index.country.m3u";
-const DEFAULT_PINS = ["Nigeria", "Spain", "United Kingdom", "Japan"];
-function loadPins() { try { return JSON.parse(localStorage.getItem('relay_pins') || 'null') || DEFAULT_PINS; } catch { return DEFAULT_PINS; } }
-function savePins(pins) { localStorage.setItem('relay_pins', JSON.stringify(pins)); }
-let PINS = loadPins();
+const PINS = ["Nigeria", "Spain", "United Kingdom", "Japan"];
 
 let byCountry = {};
 let countryNames = [];
@@ -697,35 +716,70 @@ dotMenuBtn.addEventListener('click', (e) => {
 dotDropdown.addEventListener('keydown', e => {
   const items = [...dotDropdown.querySelectorAll('button, label')];
   const idx = items.indexOf(document.activeElement);
-  let next = null;
   if (e.keyCode === 40 || e.keyCode === 39) { // down or right
     e.preventDefault();
-    next = items[idx + 1] || items[0];
+    (items[idx + 1] || items[0]).focus();
   }
   if (e.keyCode === 38 || e.keyCode === 37) { // up or left
     e.preventDefault();
-    next = items[idx - 1] || items[items.length - 1];
+    (items[idx - 1] || items[items.length - 1]).focus();
   }
-  if (next) {
-    next.focus();
-    next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }
-  if (e.keyCode === 27 || e.keyCode === 4) { // escape or back
+  if (e.keyCode === 27 || e.keyCode === 8) { // escape or back
     e.preventDefault();
     dotDropdown.style.display = 'none';
     dotMenuBtn.focus();
   }
-  e.stopPropagation();
+  e.stopPropagation(); // prevent spatialNav from also firing
 });
 // Close dropdown when clicking anywhere outside
 document.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
 // Close dropdown when menu or theme is selected
 menuBtn.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
 themeToggle.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
-// Export and Import removed
+// Export
+document.getElementById('exportBtn').addEventListener('click', () => {
+  dotDropdown.style.display = 'none';
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    relay_favs:           localStorage.getItem('relay_favs') || '[]',
+    relay_my_channels:    localStorage.getItem('relay_my_channels') || '[]',
+    relay_stream_status:  localStorage.getItem('relay_stream_status') || '{}',
+    relay_hidden:         localStorage.getItem('relay_hidden') || '{}',
+    relay_theme:          localStorage.getItem('relay_theme') || 'dark',
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `relay-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
 // Import
-// Export and Import removed
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.version) throw new Error('Invalid file');
+      if (data.relay_favs)          localStorage.setItem('relay_favs', data.relay_favs);
+      if (data.relay_my_channels)   localStorage.setItem('relay_my_channels', data.relay_my_channels);
+      if (data.relay_stream_status) localStorage.setItem('relay_stream_status', data.relay_stream_status);
+      if (data.relay_hidden)        localStorage.setItem('relay_hidden', data.relay_hidden);
+      if (data.relay_theme)         localStorage.setItem('relay_theme', data.relay_theme);
+      alert('✅ Data imported successfully! Reloading…');
+      location.reload();
+    } catch {
+      alert('❌ Invalid backup file. Please use a RELAY export file.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // reset so same file can be imported again
+});
 
 document.getElementById('exitBtn').addEventListener('click', () => {
   dotDropdown.style.display = 'none';
@@ -891,17 +945,16 @@ function getFocusables() {
 }
 
 function spatialNav(dir) {
+  // dir: 'up' | 'down' | 'left' | 'right'
   const all = getFocusables();
-  if (!all.length) return;
+  if (!all.length) { all[0]?.focus(); return; }
 
   const focused = document.activeElement;
 
-  // Nothing focused yet — focus first item only on down
+  // Nothing focused — focus first item
   if (!focused || !all.includes(focused)) {
-    if (dir === 'down' || dir === 'right') {
-      all[0].focus();
-      all[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
+    all[0].focus();
+    all[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     return;
   }
 
@@ -909,96 +962,55 @@ function spatialNav(dir) {
   const fCx = fr.left + fr.width / 2;
   const fCy = fr.top + fr.height / 2;
 
-  // For left/right — only consider elements on roughly the same row
-  // For up/down — only consider elements in roughly the same column area
-  const ROW_THRESHOLD  = fr.height * 1.2;  // elements within 1.2x height = same row
-  const COL_THRESHOLD  = fr.width  * 3;    // elements within 3x width = same column zone
-
   let best = null;
   let bestScore = Infinity;
 
   for (const el of all) {
     if (el === focused) continue;
-    const r  = el.getBoundingClientRect();
-    const cx = r.left + r.width  / 2;
-    const cy = r.top  + r.height / 2;
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
     const dx = cx - fCx;
     const dy = cy - fCy;
 
-    let primary   = 0;
+    let inDirection = false;
+    let primary = 0;
     let secondary = 0;
-    let valid     = false;
 
-    if (dir === 'right') {
-      // Must be to the right AND on roughly the same row
-      if (dx > 5 && Math.abs(dy) < ROW_THRESHOLD) {
-        valid = true; primary = dx; secondary = Math.abs(dy);
-      }
-    } else if (dir === 'left') {
-      // Must be to the left AND on roughly the same row
-      if (dx < -5 && Math.abs(dy) < ROW_THRESHOLD) {
-        valid = true; primary = -dx; secondary = Math.abs(dy);
-      }
-    } else if (dir === 'down') {
-      // Must be below AND not too far horizontally
-      if (dy > 5 && Math.abs(dx) < COL_THRESHOLD) {
-        valid = true; primary = dy; secondary = Math.abs(dx);
-      }
-    } else if (dir === 'up') {
-      // Must be above AND not too far horizontally
-      if (dy < -5 && Math.abs(dx) < COL_THRESHOLD) {
-        valid = true; primary = -dy; secondary = Math.abs(dx);
-      }
-    }
+    if (dir === 'up')    { inDirection = dy < -5;  primary = -dy; secondary = Math.abs(dx); }
+    if (dir === 'down')  { inDirection = dy > 5;   primary = dy;  secondary = Math.abs(dx); }
+    if (dir === 'left')  { inDirection = dx < -5;  primary = -dx; secondary = Math.abs(dy); }
+    if (dir === 'right') { inDirection = dx > 5;   primary = dx;  secondary = Math.abs(dy); }
 
-    if (!valid) continue;
+    if (!inDirection) continue;
 
-    // Lower score = better candidate
-    const score = primary + secondary * 2;
+    // Heavily penalise elements that are mostly off-axis
+    // For left/right: penalise if vertical offset is more than half the height
+    // For up/down: penalise if horizontal offset is more than 2 column widths
+    const score = primary + secondary * 3;
     if (score < bestScore) { bestScore = score; best = el; }
   }
 
-  // Only move if something valid was found — otherwise STAY STILL
   if (best) {
     best.focus();
     best.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
-  // If best is null — do nothing, remote stays on current element
 }
 
 window.addEventListener('keydown', e => {
   if ([37,38,39,40].includes(e.keyCode)) tvNavActive = true;
 
-  // Global back handling — layered, never exits app
-  const backKeys = [4, 27];
+  // Global back handling
+  const backKeys = [4, 8, 27];
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
-    e.preventDefault(); // always prevent default — stops browser from exiting
-
-    // Layer 1 — close player if open
     if (document.getElementById('player-overlay').classList.contains('active')) {
-      closePlayer();
-
-    // Layer 2 — close dropdown if open
-    } else if (dotDropdown.style.display === 'block') {
-      dotDropdown.style.display = 'none';
-      dotMenuBtn.focus();
-
-    // Layer 3 — close favourites drawer if open
+      e.preventDefault(); closePlayer();
     } else if (menuDrawer.classList.contains('open')) {
-      closeMenu();
-
-    // Layer 4 — go back from grid to countries
+      e.preventDefault(); closeMenu();
     } else if (currentView === 'grid') {
-      showCountriesView();  // use showCountriesView instead of history.back()
-
-    // Layer 5 — go back from global search to countries
+      e.preventDefault(); window.history.back();
     } else if (currentView === 'global-search') {
-      showCountriesView();
-
-    // Layer 6 — already on home — do absolutely nothing, never exit
-    } else {
-      const all = getFocusables();
-      if (all.length) all[0].focus();
+      e.preventDefault(); showCountriesView();
     }
     return;
   }
@@ -1039,27 +1051,16 @@ window.addEventListener('keydown', e => {
     const focused = document.activeElement;
     if (!focused || focused === document.body) return;
     e.preventDefault();
-
-    // Search input — remove readonly to open keyboard
-    if (focused.tagName === 'INPUT') {
-      focused.removeAttribute('readonly');
-      focused.focus();
-      return;
+    // If a tile is focused, click it directly to play
+    if (focused.classList.contains('tile')) {
+      focused.click();
+    } else {
+      focused.click();
     }
-
-    // Three-dot menu — open dropdown and focus first item
-    if (focused.id === 'dotMenuBtn') {
-      dotDropdown.style.display = 'block';
-      setTimeout(() => {
-        const first = dotDropdown.querySelector('button');
-        if (first) first.focus();
-      }, 50);
-      return;
-    }
-
-    focused.click();
   }
 });
+
+window.addEventListener('mousemove', () => { tvNavActive = false; });
 
 window.addEventListener('mousemove', () => { tvNavActive = false; });
 
@@ -1130,26 +1131,9 @@ function renderCountries(filter) {
   mainEl.innerHTML = `${pins}<div class="section-label">${lc?'MATCHES':'ALL COUNTRIES'}</div>
     <div class="country-list">${rows||'<div class="empty">No matches found.</div>'}</div>`;
   mainEl.querySelectorAll('.country-row, .pin').forEach(el => {
-    const country = el.getAttribute('data-country');
-    const action = () => openCountry(country);
+    const action = () => openCountry(el.getAttribute('data-country'));
     el.addEventListener('click', action);
     el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();action();} });
-    // Right-click or long-press to pin/unpin from Quick Tune
-    const pinAction = (e) => {
-      e.preventDefault();
-      const isPinned = PINS.includes(country);
-      if (isPinned) {
-        PINS = PINS.filter(p => p !== country);
-      } else {
-        PINS = [...PINS, country];
-      }
-      savePins(PINS);
-      renderCountries(searchInput.value);
-    };
-    el.addEventListener('contextmenu', pinAction);
-    let pressTimer;
-    el.addEventListener('touchstart', () => { pressTimer = setTimeout(pinAction, 600); });
-    el.addEventListener('touchend', () => clearTimeout(pressTimer));
   });
 }
 
@@ -1394,13 +1378,6 @@ function renderGlobalSearch(filter) {
     star.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(e);} });
   });
 }
-
-/* ---- Restore readonly on search inputs when they lose focus ---- */
-[searchInput, channelSearchInput, gridSearchInput].forEach(input => {
-  input.addEventListener('blur', () => {
-    input.setAttribute('readonly', '');
-  });
-});
 
 /* ---- Search input wiring ---- */
 // Bar 1 (home): filter countries by name
