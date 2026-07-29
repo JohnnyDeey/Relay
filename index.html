@@ -420,10 +420,10 @@
 
         <!-- Dropdown -->
         <div id="dotDropdown" style="
-          display:none; position:absolute; top:52px; right:16px;
+          display:none; position:fixed; top:60px; right:16px;
           background:var(--bg); border:2px solid var(--line);
-          border-radius:var(--radius); z-index:200; min-width:180px;
-          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow:hidden;" role="menu">
+          border-radius:var(--radius); z-index:999; min-width:200px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow-y:auto; max-height:80vh;" role="menu">
           <button id="themeToggle" aria-label="Toggle theme" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
@@ -442,29 +442,7 @@
             </svg>
             <span>Favourites</span>
           </button>
-          <button id="exportBtn" aria-label="Export data" style="
-            width:100%; display:flex; align-items:center; gap:12px;
-            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
-            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Export Data</span>
-          </button>
-          <label id="importBtn" aria-label="Import data" style="
-            width:100%; display:flex; align-items:center; gap:12px;
-            padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
-            color:var(--text); font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span>Import Data</span>
-            <input type="file" id="importFile" accept=".json" style="display:none;">
-          </label>
+          
           <button id="exitBtn" aria-label="Exit app" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none;
@@ -486,12 +464,12 @@
       <!-- Search bar 1: filter by country name -->
       <div class="search-bar" id="searchWrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false">
+        <input id="searchInput" type="text" placeholder="Find a country…" autocomplete="off" spellcheck="false" readonly>
       </div>
       <!-- Search bar 2: search any channel by keyword across all countries -->
       <div class="search-bar" id="channelSearchWrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="channelSearchInput" type="text" placeholder="Search any channel, e.g. "action movies"…" autocomplete="off" spellcheck="false">
+        <input id="channelSearchInput" type="text" placeholder="Search any channel, e.g. "action movies"…" autocomplete="off" spellcheck="false" readonly>
       </div>
     </div>
 
@@ -503,7 +481,7 @@
     <!-- GRID view: single channel search, shown only inside a country -->
     <div class="search-bar" id="gridSearchWrap" style="display:none;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="gridSearchInput" type="text" placeholder="Search channels…" autocomplete="off" spellcheck="false">
+      <input id="gridSearchInput" type="text" placeholder="Search channels…" autocomplete="off" spellcheck="false" readonly>
     </div>
   </header>
 
@@ -600,7 +578,10 @@
 
 <script>
 const M3U_URL = "https://iptv-org.github.io/iptv/index.country.m3u";
-const PINS = ["Nigeria", "Spain", "United Kingdom", "Japan"];
+const DEFAULT_PINS = ["Nigeria", "Spain", "United Kingdom", "Japan"];
+function loadPins() { try { return JSON.parse(localStorage.getItem('relay_pins') || 'null') || DEFAULT_PINS; } catch { return DEFAULT_PINS; } }
+function savePins(pins) { localStorage.setItem('relay_pins', JSON.stringify(pins)); }
+let PINS = loadPins();
 
 let byCountry = {};
 let countryNames = [];
@@ -716,70 +697,35 @@ dotMenuBtn.addEventListener('click', (e) => {
 dotDropdown.addEventListener('keydown', e => {
   const items = [...dotDropdown.querySelectorAll('button, label')];
   const idx = items.indexOf(document.activeElement);
+  let next = null;
   if (e.keyCode === 40 || e.keyCode === 39) { // down or right
     e.preventDefault();
-    (items[idx + 1] || items[0]).focus();
+    next = items[idx + 1] || items[0];
   }
   if (e.keyCode === 38 || e.keyCode === 37) { // up or left
     e.preventDefault();
-    (items[idx - 1] || items[items.length - 1]).focus();
+    next = items[idx - 1] || items[items.length - 1];
   }
-  if (e.keyCode === 27 || e.keyCode === 8) { // escape or back
+  if (next) {
+    next.focus();
+    next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  if (e.keyCode === 27 || e.keyCode === 4) { // escape or back
     e.preventDefault();
     dotDropdown.style.display = 'none';
     dotMenuBtn.focus();
   }
-  e.stopPropagation(); // prevent spatialNav from also firing
+  e.stopPropagation();
 });
 // Close dropdown when clicking anywhere outside
 document.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
 // Close dropdown when menu or theme is selected
 menuBtn.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
 themeToggle.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
-// Export
-document.getElementById('exportBtn').addEventListener('click', () => {
-  dotDropdown.style.display = 'none';
-  const data = {
-    version: 1,
-    exported: new Date().toISOString(),
-    relay_favs:           localStorage.getItem('relay_favs') || '[]',
-    relay_my_channels:    localStorage.getItem('relay_my_channels') || '[]',
-    relay_stream_status:  localStorage.getItem('relay_stream_status') || '{}',
-    relay_hidden:         localStorage.getItem('relay_hidden') || '{}',
-    relay_theme:          localStorage.getItem('relay_theme') || 'dark',
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `relay-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
+// Export and Import removed
 
 // Import
-document.getElementById('importFile').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!data.version) throw new Error('Invalid file');
-      if (data.relay_favs)          localStorage.setItem('relay_favs', data.relay_favs);
-      if (data.relay_my_channels)   localStorage.setItem('relay_my_channels', data.relay_my_channels);
-      if (data.relay_stream_status) localStorage.setItem('relay_stream_status', data.relay_stream_status);
-      if (data.relay_hidden)        localStorage.setItem('relay_hidden', data.relay_hidden);
-      if (data.relay_theme)         localStorage.setItem('relay_theme', data.relay_theme);
-      alert('✅ Data imported successfully! Reloading…');
-      location.reload();
-    } catch {
-      alert('❌ Invalid backup file. Please use a RELAY export file.');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = ''; // reset so same file can be imported again
-});
+// Export and Import removed
 
 document.getElementById('exitBtn').addEventListener('click', () => {
   dotDropdown.style.display = 'none';
@@ -945,16 +891,17 @@ function getFocusables() {
 }
 
 function spatialNav(dir) {
-  // dir: 'up' | 'down' | 'left' | 'right'
   const all = getFocusables();
-  if (!all.length) { all[0]?.focus(); return; }
+  if (!all.length) return;
 
   const focused = document.activeElement;
 
-  // Nothing focused — focus first item
+  // Nothing focused yet — focus first item only on down
   if (!focused || !all.includes(focused)) {
-    all[0].focus();
-    all[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (dir === 'down' || dir === 'right') {
+      all[0].focus();
+      all[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
     return;
   }
 
@@ -962,108 +909,126 @@ function spatialNav(dir) {
   const fCx = fr.left + fr.width / 2;
   const fCy = fr.top + fr.height / 2;
 
+  // For left/right — only consider elements on roughly the same row
+  // For up/down — only consider elements in roughly the same column area
+  const ROW_THRESHOLD  = fr.height * 1.2;  // elements within 1.2x height = same row
+  const COL_THRESHOLD  = fr.width  * 3;    // elements within 3x width = same column zone
+
   let best = null;
   let bestScore = Infinity;
 
   for (const el of all) {
     if (el === focused) continue;
-    const r = el.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
+    const r  = el.getBoundingClientRect();
+    const cx = r.left + r.width  / 2;
+    const cy = r.top  + r.height / 2;
     const dx = cx - fCx;
     const dy = cy - fCy;
 
-    let inDirection = false;
-    let primary = 0;
+    let primary   = 0;
     let secondary = 0;
+    let valid     = false;
 
-    if (dir === 'up')    { inDirection = dy < -5;  primary = -dy; secondary = Math.abs(dx); }
-    if (dir === 'down')  { inDirection = dy > 5;   primary = dy;  secondary = Math.abs(dx); }
-    if (dir === 'left')  { inDirection = dx < -5;  primary = -dx; secondary = Math.abs(dy); }
-    if (dir === 'right') { inDirection = dx > 5;   primary = dx;  secondary = Math.abs(dy); }
+    if (dir === 'right') {
+      // Must be to the right AND on roughly the same row
+      if (dx > 5 && Math.abs(dy) < ROW_THRESHOLD) {
+        valid = true; primary = dx; secondary = Math.abs(dy);
+      }
+    } else if (dir === 'left') {
+      // Must be to the left AND on roughly the same row
+      if (dx < -5 && Math.abs(dy) < ROW_THRESHOLD) {
+        valid = true; primary = -dx; secondary = Math.abs(dy);
+      }
+    } else if (dir === 'down') {
+      // Must be below AND not too far horizontally
+      if (dy > 5 && Math.abs(dx) < COL_THRESHOLD) {
+        valid = true; primary = dy; secondary = Math.abs(dx);
+      }
+    } else if (dir === 'up') {
+      // Must be above AND not too far horizontally
+      if (dy < -5 && Math.abs(dx) < COL_THRESHOLD) {
+        valid = true; primary = -dy; secondary = Math.abs(dx);
+      }
+    }
 
-    if (!inDirection) continue;
+    if (!valid) continue;
 
-    // Heavily penalise elements that are mostly off-axis
-    // For left/right: penalise if vertical offset is more than half the height
-    // For up/down: penalise if horizontal offset is more than 2 column widths
-    const score = primary + secondary * 3;
+    // Lower score = better candidate
+    const score = primary + secondary * 2;
     if (score < bestScore) { bestScore = score; best = el; }
   }
 
+  // Only move if something valid was found — otherwise STAY STILL
   if (best) {
     best.focus();
     best.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
+  // If best is null — do nothing, remote stays on current element
 }
 
 window.addEventListener('keydown', e => {
   if ([37,38,39,40].includes(e.keyCode)) tvNavActive = true;
 
-  // Global back handling — never exits app
-  const backKeys = [4, 8, 27];
+  // Global back handling — layered, never exits app
+  const backKeys = [4, 27];
   if (backKeys.includes(e.keyCode) || e.key === 'GoBack') {
     e.preventDefault();
+
+    // Layer 1 — close player if open
     if (document.getElementById('player-overlay').classList.contains('active')) {
       closePlayer();
+
+    // Layer 2 — close dropdown if open
     } else if (dotDropdown.style.display === 'block') {
       dotDropdown.style.display = 'none';
       dotMenuBtn.focus();
+
+    // Layer 3 — close favourites drawer if open
     } else if (menuDrawer.classList.contains('open')) {
       closeMenu();
+
+    // Layer 4 — go back from grid to countries
     } else if (currentView === 'grid') {
-      showCountriesView();
+      window.history.back();
+
+    // Layer 5 — go back from global search to countries
     } else if (currentView === 'global-search') {
       showCountriesView();
+
+    // Layer 6 — already on home, do nothing — never exit
     } else {
-      // Already on home — do nothing, never exit
+      // Stay on home, just refocus first element
       const all = getFocusables();
       if (all.length) all[0].focus();
     }
     return;
   }
 
-  // Player controls keyboard — strictly for video page only
+  // Player controls keyboard
   if (document.getElementById('player-overlay').classList.contains('active')) {
-
-    // Media keys always work regardless
+    showControls();
     switch (e.keyCode) {
       case 179: case 32: e.preventDefault(); video.paused ? video.play().catch(()=>{}) : video.pause(); break;
       case 415: e.preventDefault(); video.play().catch(()=>{}); break;
       case 19:  e.preventDefault(); video.pause(); break;
+      case 412: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime-10); } break;
+      case 417: if (!isLiveStream()) { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime+10); } break;
       case 173: case 77: video.muted = !video.muted; muteIcon.innerHTML = video.muted ? MUTED_SVG : UNMUTED_SVG; break;
     }
-
-    // Arrow keys in player — ONLY move virtual cursor, never show controls
-    if ([37,38,39,40].includes(e.keyCode)) {
+    // D-pad between player buttons
+    if ([37,38,39,40].includes(e.keyCode) && controlsVisible) {
       e.preventDefault();
-      // Let virtual cursor handle it — do NOT call showControls()
-      return;
+      const btns = [...document.querySelectorAll('#playerControls .ctrl-btn, #playerHeader .ctrl-btn')].filter(b => !b.closest('[style*="visibility: hidden"]'));
+      const focused = document.activeElement;
+      const idx = btns.indexOf(focused);
+      if (e.keyCode === 39 || e.keyCode === 40) { (btns[idx+1] || btns[0]).focus(); }
+      else { (btns[idx-1] || btns[btns.length-1]).focus(); }
     }
-
-    // OK/Enter in player:
-    // — if controls visible → navigate/click focused control button
-    // — if controls hidden → show controls
-    if (e.keyCode === 13 || e.key === 'Enter') {
-      e.preventDefault();
-      if (controlsVisible) {
-        const focused = document.activeElement;
-        if (focused && focused !== document.body) {
-          focused.click();
-        }
-      } else {
-        showControls();
-      }
-      return;
-    }
-
     return;
   }
 
-  // Spatial D-pad navigation in main UI — only on first press, not repeat
+  // Spatial D-pad navigation in main UI
   if ([37,38,39,40].includes(e.keyCode)) {
-    if (e.repeat) return; // block keyboard repeat — only fire once per press
-    if (vVisible) return; // cursor is active — let it handle movement
     e.preventDefault();
     const dirMap = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
     spatialNav(dirMap[e.keyCode]);
@@ -1075,105 +1040,27 @@ window.addEventListener('keydown', e => {
     const focused = document.activeElement;
     if (!focused || focused === document.body) return;
     e.preventDefault();
-    // If a tile is focused, click it directly to play
-    if (focused.classList.contains('tile')) {
-      focused.click();
-    } else {
-      focused.click();
+
+    // Search input — remove readonly to open keyboard
+    if (focused.tagName === 'INPUT') {
+      focused.removeAttribute('readonly');
+      focused.focus();
+      return;
     }
+
+    // Three-dot menu — open dropdown and focus first item
+    if (focused.id === 'dotMenuBtn') {
+      dotDropdown.style.display = 'block';
+      setTimeout(() => {
+        const first = dotDropdown.querySelector('button');
+        if (first) first.focus();
+      }, 50);
+      return;
+    }
+
+    focused.click();
   }
 });
-
-window.addEventListener('mousemove', () => { tvNavActive = false; });
-
-/* ---- Virtual cursor activated by holding arrow keys ---- */
-const vCursor = document.createElement('div');
-vCursor.style.cssText = `position:fixed;width:36px;height:36px;z-index:9999;pointer-events:none;display:none;`;
-vCursor.innerHTML = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="1.5"><path d="M4 2l16 10-7 1-4 7z"/></svg>`;
-document.body.appendChild(vCursor);
-
-let vX = window.innerWidth/2, vY = window.innerHeight/2;
-let vVisible = false;
-let vHoldTimer = null, vMoveInterval = null;
-const V_SPEED = 4, V_DELAY = 500; // reduced speed from 10 to 4
-const vDirs = { 37:[-V_SPEED,0], 38:[0,-V_SPEED], 39:[V_SPEED,0], 40:[0,V_SPEED] };
-const vKeys = {};
-
-function vShow() {
-  vCursor.style.display = 'block';
-  vCursor.style.left = vX + 'px';
-  vCursor.style.top  = vY + 'px';
-  vVisible = true;
-}
-function vHide() {
-  vCursor.style.display = 'none';
-  vVisible = false;
-  clearTimeout(vHoldTimer); vHoldTimer = null;
-  clearInterval(vMoveInterval); vMoveInterval = null;
-}
-function vMove(dx, dy) {
-  vX = Math.max(0, Math.min(window.innerWidth-20,  vX+dx));
-  vY = Math.max(0, Math.min(window.innerHeight-20, vY+dy));
-  vCursor.style.left = vX+'px';
-  vCursor.style.top  = vY+'px';
-}
-function vClick() {
-  vCursor.style.display = 'none';
-  const el = document.elementFromPoint(vX, vY);
-  vCursor.style.display = 'block';
-  if (el) { el.click(); if (el.tabIndex >= 0) el.focus(); }
-}
-
-window.addEventListener('keydown', e => {
-  if (![37,38,39,40].includes(e.keyCode)) return;
-  if (vKeys[e.keyCode]) return;
-  vKeys[e.keyCode] = true;
-
-  if (!vHoldTimer) {
-    vHoldTimer = setTimeout(() => {
-      // place cursor at focused element if not visible yet
-      if (!vVisible) {
-        const f = document.activeElement;
-        if (f && f !== document.body) {
-          const r = f.getBoundingClientRect();
-          vX = r.left + r.width/2;
-          vY = r.top  + r.height/2;
-        }
-        vShow();
-      }
-      vMoveInterval = setInterval(() => {
-        let dx=0, dy=0;
-        for (const k of Object.keys(vKeys)) {
-          const d = vDirs[k];
-          if (d) { dx+=d[0]; dy+=d[1]; }
-        }
-        vMove(dx, dy);
-      }, 16);
-    }, V_DELAY);
-  }
-}, true);
-
-window.addEventListener('keyup', e => {
-  if (![37,38,39,40].includes(e.keyCode)) return;
-  delete vKeys[e.keyCode];
-  if (Object.keys(vKeys).length === 0) {
-    // Stop moving but KEEP cursor visible so user can press OK
-    clearTimeout(vHoldTimer); vHoldTimer = null;
-    clearInterval(vMoveInterval); vMoveInterval = null;
-    // do NOT call vHide() here
-  }
-}, true);
-
-window.addEventListener('keydown', e => {
-  if (!vVisible) return;
-  if (e.keyCode === 13 || e.key === 'Enter') {
-    e.preventDefault(); e.stopPropagation();
-    vClick(); vHide();
-  }
-  if (![37,38,39,40,13].includes(e.keyCode)) vHide();
-});
-
-window.addEventListener('mousemove', () => { if (vVisible) vHide(); });
 
 window.addEventListener('mousemove', () => { tvNavActive = false; });
 
@@ -1244,9 +1131,26 @@ function renderCountries(filter) {
   mainEl.innerHTML = `${pins}<div class="section-label">${lc?'MATCHES':'ALL COUNTRIES'}</div>
     <div class="country-list">${rows||'<div class="empty">No matches found.</div>'}</div>`;
   mainEl.querySelectorAll('.country-row, .pin').forEach(el => {
-    const action = () => openCountry(el.getAttribute('data-country'));
+    const country = el.getAttribute('data-country');
+    const action = () => openCountry(country);
     el.addEventListener('click', action);
     el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();action();} });
+    // Right-click or long-press to pin/unpin from Quick Tune
+    const pinAction = (e) => {
+      e.preventDefault();
+      const isPinned = PINS.includes(country);
+      if (isPinned) {
+        PINS = PINS.filter(p => p !== country);
+      } else {
+        PINS = [...PINS, country];
+      }
+      savePins(PINS);
+      renderCountries(searchInput.value);
+    };
+    el.addEventListener('contextmenu', pinAction);
+    let pressTimer;
+    el.addEventListener('touchstart', () => { pressTimer = setTimeout(pinAction, 600); });
+    el.addEventListener('touchend', () => clearTimeout(pressTimer));
   });
 }
 
@@ -1491,6 +1395,13 @@ function renderGlobalSearch(filter) {
     star.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(e);} });
   });
 }
+
+/* ---- Restore readonly on search inputs when they lose focus ---- */
+[searchInput, channelSearchInput, gridSearchInput].forEach(input => {
+  input.addEventListener('blur', () => {
+    input.setAttribute('readonly', '');
+  });
+});
 
 /* ---- Search input wiring ---- */
 // Bar 1 (home): filter countries by name
