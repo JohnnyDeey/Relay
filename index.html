@@ -405,11 +405,11 @@
 <div id="app">
   <header>
     <div class="header-top">
-      <div class="brand" id="homeBtn" role="button" tabindex="0" aria-label="Go to homepage" style="cursor:pointer;">
+      <button class="brand" id="homeBtn" tabindex="0" aria-label="Refresh app" style="cursor:pointer;background:none;border:none;color:inherit;padding:0;">
         <span class="mark"></span>
         <h1>RELAY</h1>
         <span class="freq mono" id="freqLabel">TUNING…</span>
-      </div>
+      </button>
       <div class="header-actions">
         <!-- Three-dot menu button -->
         <button class="icon-header-btn" id="dotMenuBtn" aria-label="Menu" tabindex="0">
@@ -423,7 +423,7 @@
           display:none; position:absolute; top:52px; right:16px;
           background:var(--bg); border:2px solid var(--line);
           border-radius:var(--radius); z-index:200; min-width:180px;
-          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow:hidden;">
+          box-shadow:0 8px 24px rgba(0,0,0,0.18); overflow:hidden;" role="menu">
           <button id="themeToggle" aria-label="Toggle theme" style="
             width:100%; display:flex; align-items:center; gap:12px;
             padding:14px 18px; background:none; border:none; border-bottom:1px solid var(--line);
@@ -544,6 +544,12 @@
       <div class="mono" id="pname" style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
       <div id="pcountry" style="font-size:12px;color:#8E9CAE;margin-top:2px;"></div>
     </div>
+    <button class="ctrl-btn" id="reloadStreamBtn" aria-label="Refresh stream" tabindex="0" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </button>
   </div>
 
   <div id="playerControls">
@@ -616,6 +622,20 @@ function loadMyChannels() { try { return JSON.parse(localStorage.getItem(MY_CHAN
 function saveMyChannels(chs) { localStorage.setItem(MY_CHANNELS_KEY, JSON.stringify(chs)); byCountry[MY_COUNTRY] = chs; }
 function initMyChannels() { byCountry[MY_COUNTRY] = loadMyChannels(); if (!countryNames.includes(MY_COUNTRY)) countryNames.unshift(MY_COUNTRY); }
 
+/* ---- Hidden Channels ---- */
+function loadHidden() { try { return JSON.parse(localStorage.getItem('relay_hidden') || '{}'); } catch { return {}; } }
+function saveHidden(h) { localStorage.setItem('relay_hidden', JSON.stringify(h)); }
+function isHidden(country, name) { const h = loadHidden(); return !!(h[country] && h[country].includes(name)); }
+function toggleHidden(country, name) {
+  const h = loadHidden();
+  if (!h[country]) h[country] = [];
+  const idx = h[country].indexOf(name);
+  if (idx >= 0) h[country].splice(idx, 1);
+  else h[country].push(name);
+  saveHidden(h);
+}
+function countHidden(country) { const h = loadHidden(); return (h[country] || []).length; }
+
 function isFav(country, name) {
   return loadFavs().some(f => f.country === country && f.name === name);
 }
@@ -683,6 +703,22 @@ dotMenuBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   const isOpen = dotDropdown.style.display === 'block';
   dotDropdown.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    // Focus first item in dropdown for D-pad nav
+    setTimeout(() => {
+      const first = dotDropdown.querySelector('button, label');
+      if (first) first.focus();
+    }, 50);
+  }
+});
+
+// D-pad up/down navigation inside dropdown
+dotDropdown.addEventListener('keydown', e => {
+  const items = [...dotDropdown.querySelectorAll('button, label')];
+  const idx = items.indexOf(document.activeElement);
+  if (e.keyCode === 40) { e.preventDefault(); (items[idx+1] || items[0]).focus(); }
+  if (e.keyCode === 38) { e.preventDefault(); (items[idx-1] || items[items.length-1]).focus(); }
+  if (e.keyCode === 27) { dotDropdown.style.display = 'none'; dotMenuBtn.focus(); }
 });
 // Close dropdown when clicking anywhere outside
 document.addEventListener('click', () => { dotDropdown.style.display = 'none'; });
@@ -698,6 +734,7 @@ document.getElementById('exportBtn').addEventListener('click', () => {
     relay_favs:           localStorage.getItem('relay_favs') || '[]',
     relay_my_channels:    localStorage.getItem('relay_my_channels') || '[]',
     relay_stream_status:  localStorage.getItem('relay_stream_status') || '{}',
+    relay_hidden:         localStorage.getItem('relay_hidden') || '{}',
     relay_theme:          localStorage.getItem('relay_theme') || 'dark',
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -721,6 +758,7 @@ document.getElementById('importFile').addEventListener('change', (e) => {
       if (data.relay_favs)          localStorage.setItem('relay_favs', data.relay_favs);
       if (data.relay_my_channels)   localStorage.setItem('relay_my_channels', data.relay_my_channels);
       if (data.relay_stream_status) localStorage.setItem('relay_stream_status', data.relay_stream_status);
+      if (data.relay_hidden)        localStorage.setItem('relay_hidden', data.relay_hidden);
       if (data.relay_theme)         localStorage.setItem('relay_theme', data.relay_theme);
       alert('✅ Data imported successfully! Reloading…');
       location.reload();
@@ -870,12 +908,17 @@ const TV_FOCUSABLE = 'button[tabindex="0"], .country-row, .tile, .pin, .fav-item
 let tvNavActive = false;
 
 // All focusable selectors for spatial nav
-const FOCUSABLE = '.country-row, .tile, .pin, .fav-item, button[tabindex="0"], .back-row, #hideDeadBtn';
+const FOCUSABLE = '.country-row, .tile, .pin, .fav-item, button[tabindex="0"], [tabindex="0"], .back-row';
 
 function getFocusables() {
   return [...document.querySelectorAll(FOCUSABLE)].filter(el => {
     const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0 && !el.closest('#player-overlay');
+    const style = window.getComputedStyle(el);
+    return r.width > 0 && r.height > 0
+      && style.display !== 'none'
+      && style.visibility !== 'hidden'
+      && !el.closest('#player-overlay')
+      && !el.closest('#menuDrawer');
   });
 }
 
@@ -961,6 +1004,11 @@ window.addEventListener('keydown', e => {
 
   // Spatial D-pad navigation in main UI
   if ([37,38,39,40].includes(e.keyCode)) {
+    // If nothing is focused yet, focus the first focusable element
+    if (!document.activeElement || document.activeElement === document.body) {
+      const all = getFocusables();
+      if (all.length) { all[0].focus(); e.preventDefault(); return; }
+    }
     spatialNav(e);
     return;
   }
@@ -1080,6 +1128,15 @@ function openCountry(country, push = true) {
         <svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
 
+      <!-- Show hidden channels toggle -->
+      <button id="showHiddenBtn" tabindex="0" aria-label="Show hidden channels" style="display:none;background:none;border:2px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;display:none;align-items:center;gap:5px;color:var(--muted);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+        <span id="showHiddenCount">0</span>
+      </button>
       <!-- Add channel + icon (My Channels only, injected by JS) -->
       <div id="addChSlot"></div>
     </div>
@@ -1116,11 +1173,23 @@ function openCountry(country, push = true) {
   renderGrid('');
 }
 
-function renderGrid(filter, hideDead = false) {
+function renderGrid(filter, hideDead = false, showHidden = false) {
   const all = byCountry[currentCountry] || [];
   const lc = filter.trim().toLowerCase();
   let chs = lc ? all.filter(ch => ch.name.toLowerCase().includes(lc)) : all;
   if (hideDead) chs = chs.filter(ch => !isDeadStream(ch.url));
+  // Always filter out hidden channels unless showHidden is true
+  if (!showHidden) chs = chs.filter(ch => !isHidden(currentCountry, ch.name));
+  // Update show-hidden button count
+  const hiddenCount = countHidden(currentCountry);
+  const showHiddenBtn = document.getElementById('showHiddenBtn');
+  if (showHiddenBtn) {
+    showHiddenBtn.style.display = hiddenCount > 0 ? 'flex' : 'none';
+    const countEl = document.getElementById('showHiddenCount');
+    if (countEl) countEl.textContent = hiddenCount;
+    showHiddenBtn.style.borderColor = showHidden ? 'var(--signal)' : 'var(--line)';
+    showHiddenBtn.style.color = showHidden ? 'var(--signal)' : 'var(--muted)';
+  }
   const grid = document.getElementById('channelGrid');
   const sub  = document.getElementById('gridSub');
   if (!grid) return;
@@ -1145,6 +1214,14 @@ function renderGrid(filter, hideDead = false) {
         <div class="tile-name">${escapeHtml(ch.name)}</div>
         ${isDeadStream(ch.url) ? `<span style="font-size:10px;color:var(--danger);font-weight:700;letter-spacing:.05em;">⚠ DEAD</span>` : ''}
         ${isWorkingStream(ch.url) ? `<span style="font-size:10px;color:var(--tuned);font-weight:700;letter-spacing:.05em;">✓ WORKS</span>` : ''}
+        ${showHidden && isHidden(currentCountry, ch.name) ? `<span style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">HIDDEN</span>` : ''}
+        <button class="hide-eye-btn" data-country="${escapeHtml(currentCountry)}" data-name="${escapeHtml(ch.name)}" tabindex="0" aria-label="${isHidden(currentCountry, ch.name) ? 'Unhide' : 'Hide'} channel" style="position:absolute;bottom:6px;right:6px;background:none;border:none;cursor:pointer;padding:3px;border-radius:4px;color:var(--muted);display:flex;align-items:center;z-index:2;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            ${isHidden(currentCountry, ch.name)
+              ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+              : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`}
+          </svg>
+        </button>
       </div>`;
   }).join('');
 
@@ -1159,9 +1236,27 @@ function renderGrid(filter, hideDead = false) {
       editBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
       editBtn.style.cssText = `position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:4px;cursor:pointer;color:#fff;display:flex;align-items:center;z-index:2;`;
       editBtn.setAttribute('aria-label', 'Edit channel');
+      editBtn.setAttribute('tabindex', '0');
       editBtn.addEventListener('click', e => { e.stopPropagation(); showAddChannelModal(all[idx]); });
       el.appendChild(editBtn);
     }
+  });
+
+  // Hide eye buttons
+  grid.querySelectorAll('.hide-eye-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const country = btn.getAttribute('data-country');
+      const name    = btn.getAttribute('data-name');
+      toggleHidden(country, name);
+      renderGrid(gridSearchInput.value, hideDead, showHidden);
+    });
+  });
+
+  // Show hidden button
+  document.getElementById('showHiddenBtn')?.addEventListener('click', () => {
+    showHidden = !showHidden;
+    renderGrid(gridSearchInput.value, hideDead, showHidden);
   });
 
   // Fav star — stop propagation so it doesn't trigger tile click
@@ -1473,6 +1568,11 @@ function closePlayerOverlayOnly() {
 function closePlayer() { closePlayerOverlayOnly(); window.history.back(); }
 
 document.getElementById('closePlayer').addEventListener('click', e => { e.stopPropagation(); closePlayer(); });
+document.getElementById('reloadStreamBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  playChannel(currentCountry, currentChannelIdx, false);
+  showControls();
+});
 
 /* ---- Add Channel Modal ---- */
 function showAddChannelModal(existing = null) {
